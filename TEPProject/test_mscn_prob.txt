@@ -1,0 +1,32 @@
+D 5
+F 10
+M 2
+S 20
+sd
+NULL
+sf
+NULL
+sm
+NULL
+ss
+NULL
+cd
+NULL
+cf
+NULL
+cm
+NULL
+ud
+NULL
+uf
+NULL
+um
+NULL
+p
+NULL
+xdminmax
+NULL
+xfminmax
+NULL
+xmminmax
+NULL

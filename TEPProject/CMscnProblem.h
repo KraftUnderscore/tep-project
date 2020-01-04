@@ -6,6 +6,9 @@
 #define ERROR_VALUE_LESS_EQ_ZERO 1000002
 #define ERROR_INDEX_OUT_OF_RANGE 1000003
 #define ERROR_FAILED_OPENING_FILE 1000004
+#define ERROR_VALUE_LESS_THAN_MIN 1000005
+#define ERROR_VALUE_GREATER_THAN_MAX 1000006
+#define NULL_SOLUTION 1000007
 
 class CMscnProblem
 {
@@ -75,8 +78,8 @@ private:
 	double** pd_ware_to_shop_item_counts;	//xm
 
 	//funkcje parsujace pdSolution
-	void v_load_solution(double *pdSolution);
-	void v_load_part_of_solution(double *pdSolution, double** pdMatrix, int iOffsetValue, int iFstLoopCond, int iSndLoopCond);
+	int v_load_solution(double *pdSolution);
+	int v_load_part_of_solution(double *pdSolution, double** pdMatrix, double** pdUpperToLowerMinMax, int iOffsetValue, int iFstLoopCond, int iSndLoopCond);
 
 	//operacje na macierzach
 	double** v_create_matrix(int iSizeX, int iSizeY);
@@ -84,7 +87,6 @@ private:
 
 	//funkcje pomocnicze do: bool bConstraintsSatisified(double *pdSolution, int* iError);
 	bool b_capacity_check(double** pdProducedGoods, double* pdCapacities, int iUpperCount, int iLowerCount);
-
 
 	//funkcje pomocnicze do: double dGetQuality(double *pdSolution, int* iError);
 	double d_calculate_shops_revenue();	//P

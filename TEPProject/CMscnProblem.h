@@ -1,25 +1,41 @@
 #include <iostream>
 #pragma once
 
+#define SUCCESS 1000000
+#define ERROR_VALUE_LESS_ZERO 1000001
+#define ERROR_VALUE_LESS_EQ_ZERO 1000002
+#define ERROR_INDEX_OUT_OF_RANGE 1000003
+#define ERROR_FAILED_OPENING_FILE 1000004
+
 class CMscnProblem
 {
 public:
 	CMscnProblem();
 	~CMscnProblem();
-	void vSetSuppliersCount(int iCount);
-	void vSetFactoriesCount(int iCount);
-	void vSetWarehousesCount(int iCount);
-	void vSetShopsCount(int iCount);
 
-	bool bConstraintsSatisified(double *pdSolution);
+	int vSetSuppliersCount(int iCount);
+	int vSetFactoriesCount(int iCount);
+	int vSetWarehousesCount(int iCount);
+	int vSetShopsCount(int iCount);
 
-	double dGetQuality(double *pdSolution);
+	int vSetSuppCap(double dCap, int iSupplierIndex);
+	int vSetFactCap(double dCap, int iFactoryIndex);
+	int vSetWareCap(double dCap, int iWarehouseIndex);
+	int vSetShopCap(double dCap, int iShopIndex);
+
+	int vSetSuppToFactCost(double dCost, int iSupplierIndex, int iFactoryIndex);
+	int vSetFactToWareCost(double dCost, int iFactoryIndex, int iWarehouseIndex);
+	int vSetWareToShopCost(double dCost, int iWarehouseIndex, int iShopIndex);
+
+	bool bConstraintsSatisified(double *pdSolution, int* iError);
+
+	double dGetQuality(double *pdSolution, int* iError);
 
 	//zapis i odczyt
-	void vLoadProblemFromFile(std::string cFileName);
-	void vLoadSolutionFromFile(std::string cFileName);
-	void vSaveProblemToFile(std::string cFileName);
-	void vSaveSolutionToFile(std::string cFileName);
+	int vLoadProblemFromFile(std::string sFileName);
+	int vLoadSolutionFromFile(std::string sFileName);
+	int vSaveProblemToFile(std::string sFileName);
+	int vSaveSolutionToFile(std::string sFileName);
 
 private:
 	//liczba dostawcow, fabryk, magazynow, sklepow
@@ -46,6 +62,7 @@ private:
 
 	//przychody sklepow
 	double* pd_shop_revenues;	//p
+
 	//DOPISAC, ZE SUPP TO FACT, FACT TO WARE, WARE TO SHOP
 	//zakresy dopusczalnych wartosci
 	double** pd_supp_prod_min_max;	//xdminmax
@@ -57,12 +74,19 @@ private:
 	double** pd_fact_to_ware_item_counts;	//xf
 	double** pd_ware_to_shop_item_counts;	//xm
 
+	//funkcje parsujace pdSolution
 	void v_load_solution(double *pdSolution);
 	void v_load_part_of_solution(double *pdSolution, double** pdMatrix, int iOffsetValue, int iFstLoopCond, int iSndLoopCond);
+
+	//operacje na macierzach
 	double** v_create_matrix(int iSizeX, int iSizeY);
 	void v_delete_matrix(double** dMatrix, int iSizeX);
 
-	//funkcje pomocnicze do: double dGetQuality(double *pdSolution);
+	//funkcje pomocnicze do: bool bConstraintsSatisified(double *pdSolution, int* iError);
+	bool b_capacity_check(double** pdProducedGoods, double* pdCapacities, int iUpperCount, int iLowerCount);
+
+
+	//funkcje pomocnicze do: double dGetQuality(double *pdSolution, int* iError);
 	double d_calculate_shops_revenue();	//P
 	double d_calculate_usages_costs();	//Ku
 	double d_calculate_usage_cost(double** pdMatrix, double* pdArray, int iFstLoopCond, int iSndLoopCond);
@@ -73,5 +97,7 @@ private:
 	void v_add_pd_array_to_file(FILE* fFile, double* pdArray, int iArrayLength);
 	void v_add_pd_matrix_to_file(FILE *fFile, double** pdMatrix, int iSizeX, int iSizeY);
 	double d_convert_string_to_double(std::string sNumber);
-	std::string s_convert_double_to_string(double dNumber);
+
+	//funkcja pomocnicza do setterow
+	void v_recreate_setter_arr_matrix(double* pdCapacity, double* pdUseCosts, double** pdUpperToLowerCost, double** pdUpperToLowerItems, double** pdUpperToLowerMinMax, int iUpperCount, int iLowerCount);
 };

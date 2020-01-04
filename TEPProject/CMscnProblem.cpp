@@ -29,45 +29,157 @@ CMscnProblem::~CMscnProblem()
 	v_delete_matrix(pd_fact_to_ware_item_counts, i_factories_count);
 	v_delete_matrix(pd_ware_to_shop_item_counts, i_warehouses_count);
 }
-//INITIALIZE MATRICES HERE!!!
-void CMscnProblem::vSetSuppliersCount(int iCount)
+
+int CMscnProblem::vSetSuppliersCount(int iCount)
 {
-	//if(iCount<1)//ERROR
+	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_suppliers_count = iCount;
+
+	v_recreate_setter_arr_matrix(pd_suppliers_capacities, pd_supp_use_costs, pd_supp_to_fact_costs, pd_supp_to_fact_item_counts, pd_supp_prod_min_max, i_suppliers_count, i_factories_count);
+	return SUCCESS;
 }
 
-void CMscnProblem::vSetFactoriesCount(int iCount)
+int CMscnProblem::vSetFactoriesCount(int iCount)
 {
-	//if (iCount < 1)//ERROR
+	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_factories_count = iCount;
+
+	v_recreate_setter_arr_matrix(pd_factories_capacities, pd_fact_use_costs, pd_fact_to_ware_costs, pd_fact_to_ware_item_counts, pd_fact_prod_min_max, i_factories_count, i_warehouses_count);
+	vSetSuppliersCount(i_suppliers_count);
+	return SUCCESS;
 }
 
-void CMscnProblem::vSetWarehousesCount(int iCount)
+int CMscnProblem::vSetWarehousesCount(int iCount)
 {
-	//if (iCount < 1)//ERROR
+	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_warehouses_count = iCount;
+
+	v_recreate_setter_arr_matrix(pd_warehouses_capacities, pd_ware_use_costs, pd_ware_to_shop_costs, pd_ware_to_shop_item_counts, pd_ware_prod_min_max, i_warehouses_count, i_shops_count);
+	vSetFactoriesCount(i_factories_count);
+	return SUCCESS;
 }
 
-void CMscnProblem::vSetShopsCount(int iCount)
+int CMscnProblem::vSetShopsCount(int iCount)
 {
-	//if (iCount < 1)//ERROR
+	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_shops_count = iCount;
+
+	v_recreate_setter_arr_matrix(pd_shops_capacities, pd_shop_revenues, NULL, NULL, NULL, i_shops_count, 0);
+	vSetWarehousesCount(i_warehouses_count);
+	return SUCCESS;
 }
 
-bool CMscnProblem::bConstraintsSatisified(double *pdSolution)
+//OPTIMIZE SETTERS!!!
+int CMscnProblem::vSetSuppCap(double dCap, int iSupplierIndex)
 {
-	return false;
+	if (iSupplierIndex < 0) return ERROR_VALUE_LESS_ZERO;
+	if (iSupplierIndex >= i_suppliers_count) return ERROR_INDEX_OUT_OF_RANGE;
+	pd_suppliers_capacities[iSupplierIndex] = dCap;
 }
 
-double CMscnProblem::dGetQuality(double *pdSolution)
+int CMscnProblem::vSetFactCap(double dCap, int iFactoryIndex)
+{
+	if (iFactoryIndex < 0) return ERROR_VALUE_LESS_ZERO;
+	if (iFactoryIndex >= i_factories_count) return ERROR_INDEX_OUT_OF_RANGE;
+	pd_factories_capacities[iFactoryIndex] = dCap;
+}
+
+int CMscnProblem::vSetWareCap(double dCap, int iWarehouseIndex)
+{
+	if (iWarehouseIndex < 0) return ERROR_VALUE_LESS_ZERO;
+	if (iWarehouseIndex >= i_warehouses_count) return ERROR_INDEX_OUT_OF_RANGE;
+	pd_warehouses_capacities[iWarehouseIndex] = dCap;
+}
+
+int CMscnProblem::vSetShopCap(double dCap, int iShopIndex)
+{
+	if (iShopIndex < 0) return ERROR_VALUE_LESS_ZERO;
+	if (iShopIndex >= i_shops_count) return ERROR_INDEX_OUT_OF_RANGE;
+	pd_shops_capacities[iShopIndex] = dCap;
+}
+
+int CMscnProblem::vSetSuppToFactCost(double dCost, int iSupplierIndex, int iFactoryIndex)
+{
+	if (iSupplierIndex < 0 || iFactoryIndex < 0)return ERROR_VALUE_LESS_ZERO;
+	if (iSupplierIndex >= i_suppliers_count) return ERROR_INDEX_OUT_OF_RANGE;
+	if (iFactoryIndex >= i_factories_count)return ERROR_INDEX_OUT_OF_RANGE;
+	pd_supp_to_fact_costs[iSupplierIndex][iFactoryIndex] = dCost;
+}
+
+int CMscnProblem::vSetFactToWareCost(double dCost, int iFactoryIndex, int iWarehouseIndex)
+{
+	if (iFactoryIndex < 0 || iWarehouseIndex < 0)return ERROR_VALUE_LESS_ZERO;
+	if (iFactoryIndex >= i_factories_count) return ERROR_INDEX_OUT_OF_RANGE;
+	if (iWarehouseIndex >= i_warehouses_count)return ERROR_INDEX_OUT_OF_RANGE;
+	pd_fact_to_ware_costs[iFactoryIndex][iWarehouseIndex] = dCost;
+}
+
+int CMscnProblem::vSetWareToShopCost(double dCost, int iWarehouseIndex, int iShopIndex)
+{
+	if (iWarehouseIndex < 0 || iShopIndex < 0)return ERROR_VALUE_LESS_ZERO;
+	if (iWarehouseIndex >= i_warehouses_count) return ERROR_INDEX_OUT_OF_RANGE;
+	if (iShopIndex >= i_shops_count)return ERROR_INDEX_OUT_OF_RANGE;
+	pd_ware_to_shop_costs[iWarehouseIndex][iShopIndex] = dCost;
+}
+
+bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)	//needs error check || optimize code
+{
+	for (int ii = 0; ii < i_factories_count; ii++)
+	{
+		double dSuppGoods = 0.0;
+		for (int ij = 0; ij < i_suppliers_count; ij++)
+			dSuppGoods += pd_supp_to_fact_item_counts[ij][ii];
+
+		double dFactGoods = 0.0;
+		for (int ij = 0; ij < i_warehouses_count; ij++)
+		{
+			dFactGoods += pd_fact_to_ware_item_counts[ii][ij];
+			if (dFactGoods > dSuppGoods) return false;
+		}
+	}
+
+	for (int ii = 0; ii < i_warehouses_count; ii++)
+	{
+		double dFactGoods = 0.0;
+		for (int ij = 0; ij < i_factories_count; ij++)
+			dFactGoods += pd_supp_to_fact_item_counts[ij][ii];
+
+		double dWareGoods = 0.0;
+		for (int ij = 0; ij < i_shops_count; ij++)
+		{
+			dWareGoods += pd_fact_to_ware_item_counts[ii][ij];
+			if (dWareGoods > dFactGoods) return false;
+		}
+	}
+
+	bool b_cap_satisifed =
+		b_capacity_check(pd_supp_to_fact_item_counts, pd_suppliers_capacities, i_suppliers_count, i_factories_count) &&
+		b_capacity_check(pd_fact_to_ware_item_counts, pd_factories_capacities, i_factories_count, i_warehouses_count) &&
+		b_capacity_check(pd_ware_to_shop_item_counts, pd_warehouses_capacities, i_warehouses_count, i_shops_count) &&
+		b_capacity_check(pd_ware_to_shop_item_counts, pd_shops_capacities, i_warehouses_count, i_shops_count);
+
+	return b_cap_satisifed;
+}
+
+double CMscnProblem::dGetQuality(double *pdSolution, int* iError)
 {
 	return d_calculate_shops_revenue() - d_calculate_usages_costs() - d_calculate_prod_trans_costs();
 }
 
-void CMscnProblem::vSaveProblemToFile(std::string cFileName)
+//NEEDS IMPLEMENTATION SOMEHOW
+int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 {
-	FILE* pf_problem = fopen(cFileName.c_str(), "w");
-	if (pf_problem == NULL)return; //ERROR
+	FILE* pf_problem = fopen(sFileName.c_str(), "r");
+	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE; //ERROR
+	
+	fclose(pf_problem);
+	return SUCCESS;
+}
+
+int CMscnProblem::vSaveProblemToFile(std::string sFileName)
+{
+	FILE* pf_problem = fopen(sFileName.c_str(), "w");
+	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE;
 
 	fprintf(pf_problem, "D %d", i_suppliers_count);
 	fprintf(pf_problem, "\nF %d", i_factories_count);
@@ -117,6 +229,30 @@ void CMscnProblem::vSaveProblemToFile(std::string cFileName)
 	v_add_pd_matrix_to_file(pf_problem, pd_ware_prod_min_max, i_warehouses_count, i_shops_count * 2);
 
 	fclose(pf_problem);
+	return SUCCESS;
+}
+
+int CMscnProblem::vSaveSolutionToFile(std::string sFileName)
+{
+	FILE* pf_problem = fopen(sFileName.c_str(), "w");
+	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE;
+
+	fprintf(pf_problem, "D %d", i_suppliers_count);
+	fprintf(pf_problem, "\nF %d", i_factories_count);
+	fprintf(pf_problem, "\nM %d", i_warehouses_count);
+	fprintf(pf_problem, "\nS %d", i_shops_count);
+
+	fprintf(pf_problem, "\nxd\n");
+	v_add_pd_matrix_to_file(pf_problem, pd_supp_to_fact_item_counts, i_suppliers_count, i_factories_count);
+
+	fprintf(pf_problem, "\nxf\n");
+	v_add_pd_matrix_to_file(pf_problem, pd_fact_to_ware_item_counts, i_factories_count, i_warehouses_count);
+
+	fprintf(pf_problem, "\nxm\n");
+	v_add_pd_matrix_to_file(pf_problem, pd_ware_to_shop_item_counts, i_warehouses_count, i_shops_count);
+
+	fclose(pf_problem);
+	return SUCCESS;
 }
 
 void CMscnProblem::v_load_solution(double *pdSolution)
@@ -146,9 +282,24 @@ double** CMscnProblem::v_create_matrix(int iSizeX, int iSizeY)
 
 void CMscnProblem::v_delete_matrix(double** dMatrix, int iSizeX)
 {
+	if (dMatrix == NULL) return;
 	for (int ii = 0; ii < iSizeX; ii++)
 		delete dMatrix[ii];
 	delete dMatrix;
+}
+
+bool CMscnProblem::b_capacity_check(double** pdProducedGoods, double* pdCapacities, int iUpperCount, int iLowerCount)
+{
+	for (int ii = 0; ii < iUpperCount; ii++)
+	{
+		double dGoods = 0.0;
+		for (int ij = 0; ij < iLowerCount; ij++)
+		{
+			dGoods += pdProducedGoods[ii][ij];
+			if (dGoods > pdCapacities[iUpperCount])return false;
+		}
+	}
+	return true;		
 }
 
 double CMscnProblem::d_calculate_shops_revenue()
@@ -228,9 +379,22 @@ double CMscnProblem::d_convert_string_to_double(std::string sNumber)
 	return d_number;
 }
 
-std::string CMscnProblem::s_convert_double_to_string(double dNumber)
+void CMscnProblem::v_recreate_setter_arr_matrix(double* pdCapacity, double* pdUseCosts, double** pdUpperToLowerCost, double** pdUpperToLowerMinMax, double** pdUpperToLowerItems, int iUpperCount, int iLowerCount)
 {
-	std::ostringstream o_convert;
-	o_convert << dNumber;
-	return o_convert.str();
+	if(pdCapacity != NULL)
+		delete pdCapacity;
+	pdCapacity = new double[iUpperCount];
+
+	if(pdUseCosts!=NULL)
+		delete pdUseCosts;
+	pdUseCosts = new double[iUpperCount];
+
+	v_delete_matrix(pdUpperToLowerCost, iUpperCount);
+	if (iLowerCount > 0) pdUpperToLowerCost = v_create_matrix(iUpperCount, iLowerCount);
+
+	v_delete_matrix(pdUpperToLowerItems, iUpperCount);
+	if (iLowerCount > 0) pdUpperToLowerItems = v_create_matrix(iUpperCount, iLowerCount);
+
+	v_delete_matrix(pdUpperToLowerMinMax, iUpperCount);
+	if (iLowerCount > 0) pdUpperToLowerMinMax = v_create_matrix(iUpperCount, iLowerCount * 2);
 }

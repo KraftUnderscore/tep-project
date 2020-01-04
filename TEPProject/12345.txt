@@ -1,0 +1,10 @@
+D 5
+F 10
+M 2
+S 20
+xd
+NULL
+xf
+NULL
+xm
+NULL

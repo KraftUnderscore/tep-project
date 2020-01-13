@@ -61,7 +61,7 @@ int CMscnProblem::vSetSuppliersCount(int iCount)
 	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_suppliers_count = iCount;
 
-	v_recreate_setter_arr_matrix(pd_suppliers_capacities, pd_supp_use_costs, pd_supp_to_fact_costs, pd_supp_to_fact_item_counts, pd_supp_prod_min_max, i_suppliers_count, i_factories_count);
+	v_recreate_setter_arr_matrix(&pd_suppliers_capacities, &pd_supp_use_costs, &pd_supp_to_fact_costs, &pd_supp_to_fact_item_counts, &pd_supp_prod_min_max, i_suppliers_count, i_factories_count);
 	return SUCCESS;
 }
 
@@ -70,7 +70,7 @@ int CMscnProblem::vSetFactoriesCount(int iCount)
 	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_factories_count = iCount;
 
-	v_recreate_setter_arr_matrix(pd_factories_capacities, pd_fact_use_costs, pd_fact_to_ware_costs, pd_fact_to_ware_item_counts, pd_fact_prod_min_max, i_factories_count, i_warehouses_count);
+	v_recreate_setter_arr_matrix(&pd_factories_capacities, &pd_fact_use_costs, &pd_fact_to_ware_costs, &pd_fact_to_ware_item_counts, &pd_fact_prod_min_max, i_factories_count, i_warehouses_count);
 	vSetSuppliersCount(i_suppliers_count);
 	return SUCCESS;
 }
@@ -80,7 +80,7 @@ int CMscnProblem::vSetWarehousesCount(int iCount)
 	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_warehouses_count = iCount;
 
-	v_recreate_setter_arr_matrix(pd_warehouses_capacities, pd_ware_use_costs, pd_ware_to_shop_costs, pd_ware_to_shop_item_counts, pd_ware_prod_min_max, i_warehouses_count, i_shops_count);
+	v_recreate_setter_arr_matrix(&pd_warehouses_capacities, &pd_ware_use_costs, &pd_ware_to_shop_costs, &pd_ware_to_shop_item_counts, &pd_ware_prod_min_max, i_warehouses_count, i_shops_count);
 	vSetFactoriesCount(i_factories_count);
 	return SUCCESS;
 }
@@ -90,68 +90,44 @@ int CMscnProblem::vSetShopsCount(int iCount)
 	if (iCount < 1) return ERROR_VALUE_LESS_EQ_ZERO;
 	i_shops_count = iCount;
 
-	v_recreate_setter_arr_matrix(pd_shops_capacities, pd_shop_revenues, NULL, NULL, NULL, i_shops_count, 0);
+	v_recreate_setter_arr_matrix(&pd_shops_capacities, &pd_shop_revenues, NULL, NULL, NULL, i_shops_count, 0);
 	vSetWarehousesCount(i_warehouses_count);
 	return SUCCESS;
 }
-//might make helper function here
+
 int CMscnProblem::vSetSuppCap(double dCap, int iSupplierIndex)
 {
-	if (iSupplierIndex < 0) return ERROR_VALUE_LESS_ZERO;
-	if (dCap <= 0.0)return ERROR_VALUE_LESS_EQ_ZERO;
-	if (iSupplierIndex >= i_suppliers_count) return ERROR_INDEX_OUT_OF_RANGE;
-	pd_suppliers_capacities[iSupplierIndex] = dCap;
+	return v_cap_setter(dCap, iSupplierIndex, pd_suppliers_capacities, i_suppliers_count);
 }
 
 int CMscnProblem::vSetFactCap(double dCap, int iFactoryIndex)
 {
-	if (iFactoryIndex < 0) return ERROR_VALUE_LESS_ZERO;
-	if (dCap <= 0.0)return ERROR_VALUE_LESS_EQ_ZERO;
-	if (iFactoryIndex >= i_factories_count) return ERROR_INDEX_OUT_OF_RANGE;
-	pd_factories_capacities[iFactoryIndex] = dCap;
+	return v_cap_setter(dCap, iFactoryIndex, pd_factories_capacities, i_factories_count);
 }
 
 int CMscnProblem::vSetWareCap(double dCap, int iWarehouseIndex)
 {
-	if (iWarehouseIndex < 0) return ERROR_VALUE_LESS_ZERO;
-	if (dCap <= 0.0)return ERROR_VALUE_LESS_EQ_ZERO;
-	if (iWarehouseIndex >= i_warehouses_count) return ERROR_INDEX_OUT_OF_RANGE;
-	pd_warehouses_capacities[iWarehouseIndex] = dCap;
+	return v_cap_setter(dCap, iWarehouseIndex, pd_warehouses_capacities, i_warehouses_count);
 }
 
 int CMscnProblem::vSetShopCap(double dCap, int iShopIndex)
 {
-	if (iShopIndex < 0) return ERROR_VALUE_LESS_ZERO;
-	if (dCap <= 0.0)return ERROR_VALUE_LESS_EQ_ZERO;
-	if (iShopIndex >= i_shops_count) return ERROR_INDEX_OUT_OF_RANGE;
-	pd_shops_capacities[iShopIndex] = dCap;
+	return v_cap_setter(dCap, iShopIndex, pd_shops_capacities, i_shops_count);
 }
-//helper here too, much repetition, not very wow
+
 int CMscnProblem::vSetSuppToFactCost(double dCost, int iSupplierIndex, int iFactoryIndex)
 {
-	if (iSupplierIndex < 0 || iFactoryIndex < 0)return ERROR_VALUE_LESS_ZERO;
-	if (iSupplierIndex >= i_suppliers_count) return ERROR_INDEX_OUT_OF_RANGE;
-	if (iFactoryIndex >= i_factories_count)return ERROR_INDEX_OUT_OF_RANGE;
-	if (dCost <= 0.0) return ERROR_VALUE_LESS_EQ_ZERO;
-	pd_supp_to_fact_costs[iSupplierIndex][iFactoryIndex] = dCost;
+	return v_cost_setter(dCost, pd_supp_to_fact_costs, iSupplierIndex, iFactoryIndex, i_suppliers_count, i_factories_count);
 }
 
 int CMscnProblem::vSetFactToWareCost(double dCost, int iFactoryIndex, int iWarehouseIndex)
 {
-	if (iFactoryIndex < 0 || iWarehouseIndex < 0)return ERROR_VALUE_LESS_ZERO;
-	if (iFactoryIndex >= i_factories_count) return ERROR_INDEX_OUT_OF_RANGE;
-	if (iWarehouseIndex >= i_warehouses_count)return ERROR_INDEX_OUT_OF_RANGE;
-	if (dCost <= 0.0) return ERROR_VALUE_LESS_EQ_ZERO;
-	pd_fact_to_ware_costs[iFactoryIndex][iWarehouseIndex] = dCost;
+	return v_cost_setter(dCost, pd_fact_to_ware_costs, iFactoryIndex, iWarehouseIndex, i_factories_count, i_warehouses_count);
 }
 
 int CMscnProblem::vSetWareToShopCost(double dCost, int iWarehouseIndex, int iShopIndex)
 {
-	if (iWarehouseIndex < 0 || iShopIndex < 0)return ERROR_VALUE_LESS_ZERO;
-	if (iWarehouseIndex >= i_warehouses_count) return ERROR_INDEX_OUT_OF_RANGE;
-	if (iShopIndex >= i_shops_count)return ERROR_INDEX_OUT_OF_RANGE;
-	if (dCost <= 0.0) return ERROR_VALUE_LESS_EQ_ZERO;
-	pd_ware_to_shop_costs[iWarehouseIndex][iShopIndex] = dCost;
+	return v_cost_setter(dCost, pd_ware_to_shop_costs, iWarehouseIndex, iShopIndex, i_warehouses_count, i_shops_count);
 }
 
 //helper to optimize code
@@ -220,11 +196,92 @@ double CMscnProblem::dGetQuality(double *pdSolution, int* iError)
 }
 
 //NEEDS IMPLEMENTATION SOMEHOW ALSO ERRORS(v_add_to_file!!!)
+//ALSO MAKE SURE TO CLOSE FILE WHEN RETURNING FROM ERRORs!!!!!!!!!!!!!!
 int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 {
 	FILE* pf_problem = fopen(sFileName.c_str(), "r");
-	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE; //ERROR
+	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE;
 	
+	int i_read_value, i_result;
+	double d_read_value;
+	char c_dump;
+	
+	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
+	i_result = vSetSuppliersCount(i_read_value);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
+	i_result = vSetFactoriesCount(i_read_value);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
+	i_result = vSetWarehousesCount(i_read_value);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
+	i_result = vSetShopsCount(i_read_value);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_suppliers_capacities, i_suppliers_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_factories_capacities, i_factories_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_warehouses_capacities, i_warehouses_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_shops_capacities, i_shops_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_supp_to_fact_costs, i_suppliers_count, i_factories_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_fact_to_ware_costs, i_factories_count, i_warehouses_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_ware_to_shop_costs, i_warehouses_count, i_shops_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
 	fclose(pf_problem);
 	return SUCCESS;
 }
@@ -438,6 +495,37 @@ void CMscnProblem::v_add_pd_matrix_to_file(FILE *fFile, double** pdMatrix, int i
 		}
 }
 
+int CMscnProblem::v_load_array_from_file(FILE *pfFile, double *pdArray, int iArrayLength) 
+{
+	double d_read_value;
+	int i_result;
+	fseek(pfFile, 4, SEEK_CUR);
+	for (int ii = 0; ii < iArrayLength; ii++)
+	{
+		fscanf(pfFile, "%lf", &d_read_value);
+		i_result = v_cap_setter(d_read_value, ii, pdArray, iArrayLength);
+		if (i_result != SUCCESS) return i_result;
+	}
+	return SUCCESS;
+}
+
+int CMscnProblem::i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int iSizeX, int iSizeY)
+{
+	double d_read_value;
+	int i_result;
+	fseek(pfFile, 4, SEEK_CUR);
+	for (int ii = 0; ii < iSizeX; ii++)
+	{
+		for (int ij = 0; ij < iSizeY; ij++)
+		{
+			fscanf(pfFile, "%lf", &d_read_value);
+			i_result = v_cost_setter(d_read_value, pdMatrix, ii, ij, iSizeX, iSizeY);
+			if (i_result != SUCCESS) return i_result;
+		}
+	}
+	return SUCCESS;
+}
+
 double CMscnProblem::d_convert_string_to_double(std::string sNumber)
 {
 	double d_number;
@@ -445,24 +533,43 @@ double CMscnProblem::d_convert_string_to_double(std::string sNumber)
 	return d_number;
 }
 
-void CMscnProblem::v_recreate_setter_arr_matrix(double* pdCapacity, double* pdUseCosts, double** pdUpperToLowerCost, double** pdUpperToLowerMinMax, double** pdUpperToLowerItems, int iUpperCount, int iLowerCount)
+void CMscnProblem::v_recreate_setter_arr_matrix(double** pdCapacity, double** pdUseCosts, double*** pdUpperToLowerCost, double*** pdUpperToLowerMinMax, double*** pdUpperToLowerItems, int iUpperCount, int iLowerCount)
 {
-	if(pdCapacity != NULL)
-		delete pdCapacity;
-	pdCapacity = new double[iUpperCount];
+	if(*pdCapacity != NULL)
+		delete *pdCapacity;
+	*pdCapacity = new double[iUpperCount];
 
-	if(pdUseCosts!=NULL)
-		delete pdUseCosts;
-	pdUseCosts = new double[iUpperCount];
-
-	v_delete_matrix(pdUpperToLowerCost, iUpperCount);
-	v_delete_matrix(pdUpperToLowerItems, iUpperCount);
-	v_delete_matrix(pdUpperToLowerMinMax, iUpperCount);
+	if(*pdUseCosts!=NULL)
+		delete *pdUseCosts;
+	*pdUseCosts = new double[iUpperCount];
+	if (pdUpperToLowerCost == NULL || pdUpperToLowerItems == NULL || pdUpperToLowerMinMax == NULL) return;
+	v_delete_matrix(*pdUpperToLowerCost, iUpperCount);
+	v_delete_matrix(*pdUpperToLowerItems, iUpperCount);
+	v_delete_matrix(*pdUpperToLowerMinMax, iUpperCount);
 
 	if (iLowerCount > 0)
 	{
-		pdUpperToLowerCost = v_create_matrix(iUpperCount, iLowerCount);
-		pdUpperToLowerItems = v_create_matrix(iUpperCount, iLowerCount);
-		pdUpperToLowerMinMax = v_create_matrix(iUpperCount, iLowerCount * 2);
-	}//else iLowerCount hasn't been set yet.
+		*pdUpperToLowerCost = v_create_matrix(iUpperCount, iLowerCount);
+		*pdUpperToLowerItems = v_create_matrix(iUpperCount, iLowerCount);
+		*pdUpperToLowerMinMax = v_create_matrix(iUpperCount, iLowerCount * 2);
+	}//else iLowerCount hasn't been set yet, so no matrices can be created
+}
+
+int CMscnProblem::v_cap_setter(double dCap, int iIndex, double* pdArray, int iArrayLength)
+{
+	if (iIndex < 0) return ERROR_VALUE_LESS_ZERO;
+	if (dCap <= 0.0)return ERROR_VALUE_LESS_EQ_ZERO;
+	if (iIndex >= iArrayLength) return ERROR_INDEX_OUT_OF_RANGE;
+	pdArray[iIndex] = dCap;
+	return SUCCESS;
+}
+
+int CMscnProblem::v_cost_setter(double dCost, double** pdMatrix, int iUpperIndex, int iLowerIndex, int iUpperCount, int iLowerCount)
+{
+	if (iUpperIndex < 0 || iLowerIndex < 0)return ERROR_VALUE_LESS_ZERO;
+	if (iUpperIndex >= iUpperCount) return ERROR_INDEX_OUT_OF_RANGE;
+	if (iLowerIndex >= iLowerCount)return ERROR_INDEX_OUT_OF_RANGE;
+	if (dCost <= 0.0) return ERROR_VALUE_LESS_EQ_ZERO;
+	pdMatrix[iUpperIndex][iLowerIndex] = dCost;
+	return SUCCESS;
 }

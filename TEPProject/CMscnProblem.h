@@ -98,8 +98,12 @@ private:
 	//funkcje pomocnicze do zapisu/ odczytu
 	void v_add_pd_array_to_file(FILE* fFile, double* pdArray, int iArrayLength);
 	void v_add_pd_matrix_to_file(FILE *fFile, double** pdMatrix, int iSizeX, int iSizeY);
+	int v_load_array_from_file(FILE *pfFile, double *pdArray, int iArrayLength);
+	int i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int iSizeX, int iSizeY);
 	double d_convert_string_to_double(std::string sNumber);
 
 	//funkcja pomocnicza do setterow
-	void v_recreate_setter_arr_matrix(double* pdCapacity, double* pdUseCosts, double** pdUpperToLowerCost, double** pdUpperToLowerItems, double** pdUpperToLowerMinMax, int iUpperCount, int iLowerCount);
+	void v_recreate_setter_arr_matrix(double** pdCapacity, double** pdUseCosts, double*** pdUpperToLowerCost, double*** pdUpperToLowerItems, double*** pdUpperToLowerMinMax, int iUpperCount, int iLowerCount);
+	int v_cap_setter(double dCap, int iIndex, double* pdArray, int iArrayLength);
+	int v_cost_setter(double dCost, double** pdMatrix, int iUpperIndex, int iLowerIndex, int iUpperCount, int iLowerCount);
 };

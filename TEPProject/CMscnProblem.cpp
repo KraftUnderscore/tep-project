@@ -307,14 +307,14 @@ int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 		return i_result;
 	}
 
-	i_result = i_load_matrix_from_file(pf_problem, pd_supp_prod_min_max, i_warehouses_count, 2 * i_shops_count, 10);
+	i_result = i_load_matrix_from_file(pf_problem, pd_supp_prod_min_max, i_suppliers_count, 2 * i_factories_count, 10);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
 
-	i_result = i_load_matrix_from_file(pf_problem, pd_fact_prod_min_max, i_warehouses_count, 2 * i_shops_count, 10);
+	i_result = i_load_matrix_from_file(pf_problem, pd_fact_prod_min_max, i_factories_count, 2 * i_warehouses_count, 10);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
@@ -326,6 +326,13 @@ int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 	{
 		fclose(pf_problem);
 		return i_result;
+	}
+
+	for (int ii = 0; ii < i_warehouses_count; ii++)
+	{
+		for (int ij = 0; ij < 2 * i_shops_count; ij++)
+			std::cout << pd_ware_prod_min_max[ii][ij] << " ";
+		std::cout << "\n";
 	}
 
 	fclose(pf_problem);
@@ -490,9 +497,10 @@ int CMscnProblem::v_load_solution(double *pdSolution)
 int CMscnProblem::v_load_part_of_solution(double *pdSolution, double** pdMatrix, double** pdUpperToLowerMinMax, int iOffsetValue, int iFstLoopCond, int iSndLoopCond)
 {
 	for (int ii = 0; ii < iFstLoopCond; ii++)
-		for (int ij = 0; ij < iSndLoopCond; ij++)
+		for (int ij = 0; ij < iSndLoopCond; ij+=2)
 		{
 			double d_value = pdSolution[ii*iSndLoopCond + ij + iOffsetValue];
+			std::cout << "loadPart: min = " << pdUpperToLowerMinMax[ii][ij] << "; dValue = " << d_value << "\n";
 			if (d_value < pdUpperToLowerMinMax[ii][ij]) return ERROR_VALUE_LESS_THAN_MIN;
 			if (d_value > pdUpperToLowerMinMax[ii][ij + 1]) return ERROR_VALUE_GREATER_THAN_MAX;
 			pdMatrix[ii][ij] = d_value;

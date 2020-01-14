@@ -5,12 +5,7 @@
 int main()
 {
 	CMscnProblem t;
-	//t.vSetFactoriesCount(2);
-	//t.vSetSuppliersCount(1);
-	//t.vSetWarehousesCount(3);
-	//t.vSetShopsCount(4);
-	//t.vSaveProblemToFile("C:\\Users\\Sebastian\\Desktop\\teptest1.txt");
-	int i_result;
+	int i_result=-1;
 	i_result = t.vLoadProblemFromFile("C:\\Users\\Sebastian\\Desktop\\teppro2.txt");
 	std::cout <<"wczytanie problemu: "<< i_result<<"\n";
 	double* pd_solution = NULL;

@@ -195,15 +195,12 @@ double CMscnProblem::dGetQuality(double *pdSolution, int* iError)
 	return d_calculate_shops_revenue() - d_calculate_usages_costs() - d_calculate_prod_trans_costs();
 }
 
-//NEEDS IMPLEMENTATION SOMEHOW ALSO ERRORS(v_add_to_file!!!)
-//ALSO MAKE SURE TO CLOSE FILE WHEN RETURNING FROM ERRORs!!!!!!!!!!!!!!
 int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 {
 	FILE* pf_problem = fopen(sFileName.c_str(), "r");
 	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE;
 	
 	int i_read_value, i_result;
-	double d_read_value;
 	char c_dump;
 	
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
@@ -261,21 +258,70 @@ int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 		return i_result;
 	}
 
-	i_result = i_load_matrix_from_file(pf_problem, pd_supp_to_fact_costs, i_suppliers_count, i_factories_count);
+	i_result = i_load_matrix_from_file(pf_problem, pd_supp_to_fact_costs, i_suppliers_count, i_factories_count, 4);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
 
-	i_result = i_load_matrix_from_file(pf_problem, pd_fact_to_ware_costs, i_factories_count, i_warehouses_count);
+	i_result = i_load_matrix_from_file(pf_problem, pd_fact_to_ware_costs, i_factories_count, i_warehouses_count, 4);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
 
-	i_result = i_load_matrix_from_file(pf_problem, pd_ware_to_shop_costs, i_warehouses_count, i_shops_count);
+	i_result = i_load_matrix_from_file(pf_problem, pd_ware_to_shop_costs, i_warehouses_count, i_shops_count, 4);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_supp_use_costs, i_suppliers_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_fact_use_costs, i_factories_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_ware_use_costs, i_warehouses_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = v_load_array_from_file(pf_problem, pd_shop_revenues, i_shops_count);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_supp_prod_min_max, i_warehouses_count, 2 * i_shops_count, 10);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_fact_prod_min_max, i_warehouses_count, 2 * i_shops_count, 10);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_ware_prod_min_max, i_warehouses_count, 2 * i_shops_count, 10);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
@@ -285,6 +331,66 @@ int CMscnProblem::vLoadProblemFromFile(std::string sFileName)
 	fclose(pf_problem);
 	return SUCCESS;
 }
+
+int CMscnProblem::vLoadSolutionFromFile(std::string sFileName, double **pdSolution)
+{
+	if (*pdSolution != NULL) delete *pdSolution;
+
+	FILE* pf_problem = fopen(sFileName.c_str(), "r");
+	if (pf_problem == NULL)return ERROR_FAILED_OPENING_FILE;
+
+	int i_result;
+	char c_dump;
+	int i_D, i_F, i_M, i_S;
+	fscanf(pf_problem, "%c%i%c", &c_dump, &i_D, &c_dump);
+	fscanf(pf_problem, "%c%i%c", &c_dump, &i_F, &c_dump);
+	fscanf(pf_problem, "%c%i%c", &c_dump, &i_M, &c_dump);
+	fscanf(pf_problem, "%c%i%c", &c_dump, &i_S, &c_dump);
+
+	if (i_D != i_suppliers_count || i_F != i_factories_count || i_M != i_warehouses_count || i_S != i_shops_count) return -1; //ERROR
+
+	double** pd_xd = v_create_matrix(i_D, i_F);
+	double** pd_xf = v_create_matrix(i_F, i_M);
+	double** pd_xm = v_create_matrix(i_M, i_S);
+
+	i_result = i_load_matrix_from_file(pf_problem, pd_xd, i_suppliers_count, i_factories_count, 4);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+	i_result = i_load_matrix_from_file(pf_problem, pd_xf, i_factories_count, i_warehouses_count, 4);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+	i_result = i_load_matrix_from_file(pf_problem, pd_xm, i_warehouses_count, i_shops_count, 4);
+	if (i_result != SUCCESS)
+	{
+		fclose(pf_problem);
+		return i_result;
+	}
+
+	double* pd_array = new double[i_D*i_F + i_F * i_M + i_M * i_S];
+	int i_offset = 0;
+	for (int ii = 0; ii < i_D; ii++)
+		for (int ij = 0; ij < i_F; ij++)
+			pd_array[ii*i_F + ij + i_offset] = pd_xd[ii][ij];
+	i_offset += i_D * i_F;
+	for (int ii = 0; ii < i_F; ii++)
+		for (int ij = 0; ij < i_M; ij++)
+			pd_array[ii*i_M + ij + i_offset] = pd_xf[ii][ij];
+	i_offset += i_F * i_M;
+	for (int ii = 0; ii < i_M; ii++)
+		for (int ij = 0; ij < i_S; ij++)
+			pd_array[ii*i_S + ij + i_offset] = pd_xm[ii][ij];
+
+	*pdSolution = pd_array;
+	fclose(pf_problem);
+	return SUCCESS;
+}
+
 
 int CMscnProblem::vSaveProblemToFile(std::string sFileName)
 {
@@ -509,11 +615,11 @@ int CMscnProblem::v_load_array_from_file(FILE *pfFile, double *pdArray, int iArr
 	return SUCCESS;
 }
 
-int CMscnProblem::i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int iSizeX, int iSizeY)
+int CMscnProblem::i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int iSizeX, int iSizeY, int iOffset)
 {
 	double d_read_value;
 	int i_result;
-	fseek(pfFile, 4, SEEK_CUR);
+	fseek(pfFile, iOffset, SEEK_CUR);
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		for (int ij = 0; ij < iSizeY; ij++)
@@ -526,11 +632,13 @@ int CMscnProblem::i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int i
 	return SUCCESS;
 }
 
-double CMscnProblem::d_convert_string_to_double(std::string sNumber)
+double* CMscnProblem::pd_matrix_to_array(double** pdMatrix, int iSizeX, int iSizeY)
 {
-	double d_number;
-	if (!(std::istringstream(sNumber) >> d_number)) d_number = 0.0;	//ERROR zamiast 0.0
-	return d_number;
+	double* pd_array = new double[iSizeX*iSizeY];
+	for (int ii = 0; ii < iSizeX; ii++) 
+		for (int ij = 0; ij < iSizeY; ij++)
+			pd_array[ii*iSizeY + ij] = pdMatrix[ii][ij];
+	return pd_array;
 }
 
 void CMscnProblem::v_recreate_setter_arr_matrix(double** pdCapacity, double** pdUseCosts, double*** pdUpperToLowerCost, double*** pdUpperToLowerMinMax, double*** pdUpperToLowerItems, int iUpperCount, int iLowerCount)
@@ -557,8 +665,8 @@ void CMscnProblem::v_recreate_setter_arr_matrix(double** pdCapacity, double** pd
 
 int CMscnProblem::v_cap_setter(double dCap, int iIndex, double* pdArray, int iArrayLength)
 {
-	if (iIndex < 0) return ERROR_VALUE_LESS_ZERO;
-	if (dCap <= 0.0)return ERROR_VALUE_LESS_EQ_ZERO;
+	if (iIndex < 0) return ERROR_INDEX_OUT_OF_RANGE;
+	if (dCap < 0.0)return ERROR_VALUE_LESS_ZERO;
 	if (iIndex >= iArrayLength) return ERROR_INDEX_OUT_OF_RANGE;
 	pdArray[iIndex] = dCap;
 	return SUCCESS;
@@ -566,10 +674,10 @@ int CMscnProblem::v_cap_setter(double dCap, int iIndex, double* pdArray, int iAr
 
 int CMscnProblem::v_cost_setter(double dCost, double** pdMatrix, int iUpperIndex, int iLowerIndex, int iUpperCount, int iLowerCount)
 {
-	if (iUpperIndex < 0 || iLowerIndex < 0)return ERROR_VALUE_LESS_ZERO;
+	if (iUpperIndex < 0 || iLowerIndex < 0)return ERROR_INDEX_OUT_OF_RANGE;
 	if (iUpperIndex >= iUpperCount) return ERROR_INDEX_OUT_OF_RANGE;
 	if (iLowerIndex >= iLowerCount)return ERROR_INDEX_OUT_OF_RANGE;
-	if (dCost <= 0.0) return ERROR_VALUE_LESS_EQ_ZERO;
+	if (dCost < 0.0) return ERROR_VALUE_LESS_ZERO;
 	pdMatrix[iUpperIndex][iLowerIndex] = dCost;
 	return SUCCESS;
 }

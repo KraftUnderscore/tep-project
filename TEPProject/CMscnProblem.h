@@ -36,7 +36,7 @@ public:
 
 	//zapis i odczyt
 	int vLoadProblemFromFile(std::string sFileName);
-	int vLoadSolutionFromFile(std::string sFileName);
+	int vLoadSolutionFromFile(std::string sFileName, double** pdSolution);
 	int vSaveProblemToFile(std::string sFileName);
 	int vSaveSolutionToFile(std::string sFileName);
 
@@ -99,8 +99,8 @@ private:
 	void v_add_pd_array_to_file(FILE* fFile, double* pdArray, int iArrayLength);
 	void v_add_pd_matrix_to_file(FILE *fFile, double** pdMatrix, int iSizeX, int iSizeY);
 	int v_load_array_from_file(FILE *pfFile, double *pdArray, int iArrayLength);
-	int i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int iSizeX, int iSizeY);
-	double d_convert_string_to_double(std::string sNumber);
+	int i_load_matrix_from_file(FILE *pfFile, double** pdMatrix, int iSizeX, int iSizeY, int iOffset);
+	double* pd_matrix_to_array(double** pdMatrix, int iSizeX, int iSizeY);
 
 	//funkcja pomocnicza do setterow
 	void v_recreate_setter_arr_matrix(double** pdCapacity, double** pdUseCosts, double*** pdUpperToLowerCost, double*** pdUpperToLowerItems, double*** pdUpperToLowerMinMax, int iUpperCount, int iLowerCount);

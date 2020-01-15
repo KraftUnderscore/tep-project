@@ -72,6 +72,13 @@ private:
 	double** pd_fact_prod_min_max;	//xfminmax
 	double** pd_ware_prod_min_max;	//xmminmax
 
+	double** pd_supp_prod_min;//xdminmax
+	double** pd_supp_prod_max;
+	double** pd_fact_prod_min;//xfminmax
+	double** pd_fact_prod_max;
+	double** pd_ware_prod_min;//xmminmax
+	double** pd_ware_prod_max;
+
 	//rzeczywista ilosc produktu wytwarzana i transportowana dalej w lancuchu
 	double** pd_supp_to_fact_item_counts;	//xd
 	double** pd_fact_to_ware_item_counts;	//xf
@@ -79,7 +86,7 @@ private:
 
 	//funkcje parsujace pdSolution
 	int v_load_solution(double *pdSolution);
-	int v_load_part_of_solution(double *pdSolution, double** pdMatrix, double** pdUpperToLowerMinMax, int iOffsetValue, int iFstLoopCond, int iSndLoopCond);
+	int v_load_part_of_solution(double *pdSolution, double** pdMatrix, double** pdUpperToLowerMin, double** pdUpperToLowerMax, int iOffsetValue, int iFstLoopCond, int iSndLoopCond);
 
 	//operacje na macierzach
 	double** v_create_matrix(int iSizeX, int iSizeY);
@@ -103,7 +110,7 @@ private:
 	double* pd_matrix_to_array(double** pdMatrix, int iSizeX, int iSizeY);
 
 	//funkcja pomocnicza do setterow
-	void v_recreate_setter_arr_matrix(double** pdCapacity, double** pdUseCosts, double*** pdUpperToLowerCost, double*** pdUpperToLowerItems, double*** pdUpperToLowerMinMax, int iUpperCount, int iLowerCount);
+	void v_recreate_setter_arr_matrix(double** pdCapacity, double** pdUseCosts, double*** pdUpperToLowerCost, double*** pdUpperToLowerItems, double*** pdUpperToLowerMinMax, double*** pdUpperToLowerMin, double*** pdUpperToLowerMax, int iUpperCount, int iLowerCount);
 	int v_cap_setter(double dCap, int iIndex, double* pdArray, int iArrayLength);
 	int v_cost_setter(double dCost, double** pdMatrix, int iUpperIndex, int iLowerIndex, int iUpperCount, int iLowerCount);
 };

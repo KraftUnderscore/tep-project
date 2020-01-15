@@ -171,11 +171,11 @@ bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)
 
 	if (iError != NULL)
 		*iError = SUCCESS;
-
-	return b_capacity_check(pd_supp_to_fact_item_counts, pd_suppliers_capacities, i_suppliers_count, i_factories_count) &&
-		b_capacity_check(pd_fact_to_ware_item_counts, pd_factories_capacities, i_factories_count, i_warehouses_count) &&
-		b_capacity_check(pd_ware_to_shop_item_counts, pd_warehouses_capacities, i_warehouses_count, i_shops_count) &&
-		b_capacity_check(pd_ware_to_shop_item_counts, pd_shops_capacities, i_warehouses_count, i_shops_count);
+	bool b1 = b_capacity_check(pd_supp_to_fact_item_counts, pd_suppliers_capacities, i_suppliers_count, i_factories_count);
+	bool b2 = b_capacity_check(pd_fact_to_ware_item_counts, pd_factories_capacities, i_factories_count, i_warehouses_count);
+	bool b3 = b_capacity_check(pd_ware_to_shop_item_counts, pd_warehouses_capacities, i_warehouses_count, i_shops_count);
+	bool b4 = b_capacity_check(pd_ware_to_shop_item_counts, pd_shops_capacities, i_warehouses_count, i_shops_count);
+	return b1 && b2 && b3 && b4;
 
 }
 
@@ -477,22 +477,27 @@ int CMscnProblem::v_load_solution(double *pdSolution)
 	if (i_suppliers_count <= 0 || i_factories_count <= 0 || i_warehouses_count <= 0 || i_shops_count <= 0) return ERROR_VALUE_LESS_EQ_ZERO;
 	int i_result;
 	int i_offset = 0;
+	std::cout << "pd_supp_to_fact" << "\n";
 	i_result = v_load_part_of_solution(pdSolution, pd_supp_to_fact_item_counts, pd_supp_prod_min_max, i_offset, i_suppliers_count, i_factories_count);
 	if (i_result != SUCCESS) return i_result;
 	i_offset += i_suppliers_count * i_factories_count - 1;
-	v_load_part_of_solution(pdSolution, pd_fact_to_ware_item_counts, pd_fact_prod_min_max, i_offset, i_factories_count, i_warehouses_count);
+	std::cout << "pd_fact_to_ware" << "\n";
+	i_result = v_load_part_of_solution(pdSolution, pd_fact_to_ware_item_counts, pd_fact_prod_min_max, i_offset, i_factories_count, i_warehouses_count);
 	if (i_result != SUCCESS) return i_result;
 	i_offset += i_factories_count * i_warehouses_count;
-	v_load_part_of_solution(pdSolution, pd_ware_to_shop_item_counts, pd_ware_prod_min_max, i_offset, i_warehouses_count, i_shops_count);
+	std::cout << "pd_ware_to_shop" << "\n";
+	i_result = v_load_part_of_solution(pdSolution, pd_ware_to_shop_item_counts, pd_ware_prod_min_max, i_offset, i_warehouses_count, i_shops_count);
 	return i_result;
 }
 
 int CMscnProblem::v_load_part_of_solution(double *pdSolution, double** pdMatrix, double** pdUpperToLowerMinMax, int iOffsetValue, int iFstLoopCond, int iSndLoopCond)
 {
 	for (int ii = 0; ii < iFstLoopCond; ii++)
-		for (int ij = 0; ij < iSndLoopCond; ij++)
+		for (int ij = 0; ij < iSndLoopCond; ij+=2)
 		{
 			double d_value = pdSolution[ii*iSndLoopCond + ij + iOffsetValue];
+			std::cout << d_value << " < " << pdUpperToLowerMinMax[ii][ij] << "\n";
+			std::cout << d_value << " > " << pdUpperToLowerMinMax[ii][ij+1] << "\n";
 			if (d_value < pdUpperToLowerMinMax[ii][ij]) return ERROR_VALUE_LESS_THAN_MIN;
 			if (d_value > pdUpperToLowerMinMax[ii][ij + 1]) return ERROR_VALUE_GREATER_THAN_MAX;
 			pdMatrix[ii][ij] = d_value;
@@ -525,7 +530,7 @@ bool CMscnProblem::b_capacity_check(double** pdProducedGoods, double* pdCapaciti
 		for (int ij = 0; ij < iLowerCount; ij++)
 		{
 			dGoods += pdProducedGoods[ii][ij];
-			if (dGoods > pdCapacities[iUpperCount])return false;
+			if (dGoods > pdCapacities[ii])return false;
 		}
 	}
 	return true;		

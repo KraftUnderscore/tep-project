@@ -28,7 +28,10 @@ double CMatrix::dGetValue(int iRow, int iColumn, int& iError)
 {
 	return c_matrix.dGetValue(iRow*i_columns + iColumn, iError);
 }
-
+double CMatrix::dGetValue(int iIndex, int& iError)
+{
+	return c_matrix.dGetValue(iIndex, iError);
+}
 void CMatrix::vPrint()
 {
 	int i_result;
@@ -39,9 +42,7 @@ void CMatrix::vPrint()
 			double d_value = c_matrix.dGetValue(ii * i_columns + ij, i_result);
 			if (i_result != SUCCESS)std::cout << "ERROR ";
 			else std::cout << d_value<<" ";
-
 		}
 		std::cout << "\n";
 	}
-	
 }

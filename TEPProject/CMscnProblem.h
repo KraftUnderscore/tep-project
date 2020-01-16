@@ -31,6 +31,9 @@ public:
 
 	bool bConstraintsSatisified(double *pdSolution, int* iError);
 
+	double dGetMin(int iIndex, int& iError);
+	double dGetMax(int iIndex, int& iError);
+
 	double dGetQuality(double *pdSolution, int* iError);
 
 	//zapis i odczyt
@@ -47,44 +50,47 @@ private:
 	int i_shop_count;	//S
 
 	//moce produkcyjne dostawcow, fabryk, pojemnosc magazynow, zapotrzebowania sklepow
-	CTable pd_supp_caps;	//sd
-	CTable pd_fact_caps;	//sf
-	CTable pd_ware_caps;	//sm
-	CTable pd_shop_caps;	//ss
+	CTable c_supp_caps;	//sd
+	CTable c_fact_caps;	//sf
+	CTable c_ware_caps;	//sm
+	CTable c_shop_caps;	//ss
 
 	//koszty wytworzenia(badz przechowania) i transportu
-	CMatrix pd_supp_to_fact_costs;	//cd
-	CMatrix pd_fact_to_ware_costs;	//cf
-	CMatrix pd_ware_to_shop_costs;	//cm
+	CMatrix c_supp_to_fact_costs;	//cd
+	CMatrix c_fact_to_ware_costs;	//cf
+	CMatrix c_ware_to_shop_costs;	//cm
 
 	//jednorazowy koszt korzystania z uslug dostawcy, fabryki, magazynu
-	CTable pd_supp_use_costs;	//ud
-	CTable pd_fact_use_costs;	//uf
-	CTable pd_ware_use_costs;	//um
+	CTable c_supp_use_costs;	//ud
+	CTable c_fact_use_costs;	//uf
+	CTable c_ware_use_costs;	//um
 
 	//przychody sklepow
-	CTable pd_shop_revenues;	//p
+	CTable c_shop_revenues;	//p
 
 	//zakresy dopusczalnych wartosci
-	CMatrix pd_supp_to_fact_goods_min;//xdminmax
-	CMatrix pd_supp_to_fact_goods_max;
-	CMatrix pd_fact_to_ware_goods_min;//xfminmax
-	CMatrix pd_fact_to_ware_goods_max;
-	CMatrix pd_ware_to_shop_goods_min;//xmminmax
-	CMatrix pd_ware_to_shop_goods_max;
+	CMatrix c_supp_to_fact_goods_min;//xdminmax
+	CMatrix c_supp_to_fact_goods_max;
+	CMatrix c_fact_to_ware_goods_min;//xfminmax
+	CMatrix c_fact_to_ware_goods_max;
+	CMatrix c_ware_to_shop_goods_min;//xmminmax
+	CMatrix c_ware_to_shop_goods_max;
 
 	//rzeczywista ilosc produktu wytwarzana i transportowana dalej w lancuchu
-	CMatrix pd_supp_to_fact_goods;	//xd
-	CMatrix pd_fact_to_ware_goods;	//xf
-	CMatrix pd_ware_to_shop_goods;	//xm
+	CMatrix c_supp_to_fact_goods;	//xd
+	CMatrix c_fact_to_ware_goods;	//xf
+	CMatrix c_ware_to_shop_goods;	//xm
 
 	//funkcje parsujace pdSolution
 	int i_load_solution(double *pdSolution);
-	int i_load_part_of_solution(double *pdSolution, CMatrix* pcUpperToLowerGoods, CMatrix* pcUpperToLowerMin, CMatrix* pcUpperToLowerMax, int iSolutionOffset, int iUpperCount, int iLowerCount);
+	int i_load_part_of_solution(double *pdSolution, CMatrix* pcUpperToLowerGoods, int iSolutionOffset, int iUpperCount, int iLowerCount);
 
 	//funkcje pomocnicze do: bool bConstraintsSatisified(double *pdSolution, int* iError);
 	bool b_capacity_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount);
 	bool b_shop_cap_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount);
+	
+	bool b_check_min_max(double *pdSolution);
+	int b_check_part_min_max(double *pdSolution, CMatrix* pcUpperToLowerGoods, CMatrix* pcUpperToLowerMin, CMatrix* pcUpperToLowerMax, int iSolutionOffset, int iUpperCount, int iLowerCount);
 
 	//funkcje pomocnicze do: double dGetQuality(double *pdSolution, int* iError);
 	double d_calculate_shops_revenue();	//P
@@ -94,8 +100,9 @@ private:
 	double d_calculate_upp_to_low_cost(CMatrix* pcUpperToLowerCosts, CMatrix* pcUpperToLowerGoods, int iUpperCount, int iLowerCount);
 
 	//funkcje pomocnicze do zapisu/ odczytu
-	int i_add_pc_array_to_file(FILE* fFile, CTable* pcArray, int iArrayLength);
-	int i_add_pc_matrix_to_file(FILE *fFile, CMatrix* pcMatrix, int iSizeX, int iSizeY);
+	int i_add_pc_array_to_file(FILE* pfFile, CTable* pcArray, int iArrayLength);
+	int i_add_pc_matrix_to_file(FILE* pfFile, CMatrix* pcMatrix, int iSizeX, int iSizeY);
+	int i_add_min_max_matrix_to_file(FILE *pfFile, CMatrix* pcMinMatrix, CMatrix* pcMaxMatrix, int iSizeX, int iSizeY);
 	int i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArrayLength);
 	int i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iSizeX, int iSizeY, int iFileOffset);
 	int i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMatrix, CMatrix* pcMaxMatrix, int iSizeX, int iSizeY, int iFileOffset);

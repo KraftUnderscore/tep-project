@@ -82,12 +82,9 @@ private:
 	int i_load_solution(double *pdSolution);
 	int i_load_part_of_solution(double *pdSolution, CMatrix* pcUpperToLowerGoods, CMatrix* pcUpperToLowerMin, CMatrix* pcUpperToLowerMax, int iSolutionOffset, int iUpperCount, int iLowerCount);
 
-	//operacje na macierzach
-	double** pd_create_matrix(int iSizeX, int iSizeY);
-	void v_delete_matrix(double** dMatrix, int iSizeX);
-
 	//funkcje pomocnicze do: bool bConstraintsSatisified(double *pdSolution, int* iError);
 	bool b_capacity_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount);
+	bool b_shop_cap_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount);
 
 	//funkcje pomocnicze do: double dGetQuality(double *pdSolution, int* iError);
 	double d_calculate_shops_revenue();	//P

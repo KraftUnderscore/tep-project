@@ -160,12 +160,11 @@ bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)
 			*iError = i_result;
 		return false;
 	}
-
 	for (int ii = 0; ii < i_fact_count; ii++)
 	{
 		double dSuppGoods = 0.0;
 		for (int ij = 0; ij < i_supp_count; ij++)
-			dSuppGoods += pd_supp_to_fact_goods.dGetValue(ii, ij, i_result);
+			dSuppGoods += pd_supp_to_fact_goods.dGetValue(ij, ii, i_result);
 
 		double dFactGoods = 0.0;
 		for (int ij = 0; ij < i_ware_count; ij++)
@@ -184,12 +183,12 @@ bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)
 	{
 		double dFactGoods = 0.0;
 		for (int ij = 0; ij < i_fact_count; ij++)
-			dFactGoods += pd_supp_to_fact_goods.dGetValue(ii, ij, i_result);
+			dFactGoods += pd_fact_to_ware_goods.dGetValue(ij, ii, i_result);
 
 		double dWareGoods = 0.0;
 		for (int ij = 0; ij < i_shop_count; ij++)
 		{
-			dWareGoods += pd_fact_to_ware_goods.dGetValue(ii, ij, i_result);
+			dWareGoods += pd_ware_to_shop_goods.dGetValue(ii, ij, i_result);
 			if (dWareGoods > dFactGoods) return false;
 		}
 	}
@@ -202,12 +201,12 @@ bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)
 	if (iError != NULL)
 		*iError = SUCCESS;
 
-	bool b1 = b_capacity_check(&pd_supp_to_fact_goods, &pd_supp_caps, i_supp_count, i_fact_count);
-	bool b2 = b_capacity_check(&pd_fact_to_ware_goods, &pd_fact_caps, i_fact_count, i_ware_count);
-	bool b3 = b_capacity_check(&pd_ware_to_shop_goods, &pd_ware_caps, i_ware_count, i_shop_count);
-	bool b4 = b_capacity_check(&pd_ware_to_shop_goods, &pd_shop_caps, i_ware_count, i_shop_count);
-	return b1 && b2 && b3 && b4;
-
+	bool b_supp = b_capacity_check(&pd_supp_to_fact_goods, &pd_supp_caps, i_supp_count, i_fact_count);
+	bool b_fact = b_capacity_check(&pd_fact_to_ware_goods, &pd_fact_caps, i_fact_count, i_ware_count);
+	bool b_ware = b_capacity_check(&pd_ware_to_shop_goods, &pd_ware_caps, i_ware_count, i_shop_count);
+	bool b_shop = b_shop_cap_check(&pd_ware_to_shop_goods, &pd_shop_caps, i_ware_count, i_shop_count);
+	
+	return b_supp && b_fact && b_ware && b_shop;
 }
 
 double CMscnProblem::dGetQuality(double *pdSolution, int* iError)
@@ -225,9 +224,6 @@ double CMscnProblem::dGetQuality(double *pdSolution, int* iError)
 	double d_shop_rev = d_calculate_shops_revenue();
 	double d_usages_costs = d_calculate_usages_costs();
 	double d_prod_trans_costs = d_calculate_upp_to_low_costs();
-	std::cout << "P=" << d_shop_rev;
-	std::cout << "\nKu=" << d_usages_costs;
-	std::cout << "\nKt=" << d_prod_trans_costs << "\n";
 	return d_shop_rev - d_usages_costs - d_prod_trans_costs;
 }
 
@@ -490,21 +486,21 @@ int CMscnProblem::iSaveProblemToFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}
-	fprintf(pf_problem, "\ncf\n");
+	fprintf(pf_problem, "cf\n");
 	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_fact_to_ware_costs, i_fact_count, i_ware_count);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
-	fprintf(pf_problem, "\ncm\n");
+	fprintf(pf_problem, "cm\n");
 	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_ware_to_shop_costs, i_ware_count, i_shop_count);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
-	fprintf(pf_problem, "\nud\n");
+	fprintf(pf_problem, "ud\n");
 	i_result = i_add_pc_array_to_file(pf_problem, &pd_supp_use_costs, i_supp_count);
 	if (i_result != SUCCESS)
 	{
@@ -558,14 +554,14 @@ int CMscnProblem::iSaveSolutionToFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}
-	fprintf(pf_problem, "\nxf\n");
+	fprintf(pf_problem, "xf\n");
 	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_fact_to_ware_goods, i_fact_count, i_ware_count);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
-	fprintf(pf_problem, "\nxm\n");
+	fprintf(pf_problem, "xm\n");
 	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_ware_to_shop_goods, i_ware_count, i_shop_count);
 	if (i_result != SUCCESS)
 	{
@@ -611,22 +607,6 @@ int CMscnProblem::i_load_part_of_solution(double *pdSolution, CMatrix* pcUpperTo
 	return SUCCESS;
 }
 
-double** CMscnProblem::pd_create_matrix(int iSizeX, int iSizeY)
-{
-	double** pd_result = new double*[iSizeX];
-	for (int ii = 0; ii < iSizeX; ii++)
-		pd_result[ii] = new double[iSizeY];
-	return pd_result;
-}
-
-void CMscnProblem::v_delete_matrix(double** dMatrix, int iSizeX)
-{
-	if (dMatrix == NULL) return;
-	for (int ii = 0; ii < iSizeX; ii++)
-		delete dMatrix[ii];
-	delete dMatrix;
-}
-
 bool CMscnProblem::b_capacity_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount)
 {
 	int i_result;
@@ -635,11 +615,26 @@ bool CMscnProblem::b_capacity_check(CMatrix* pcProducedGoods, CTable* pcCapaciti
 		double d_goods = 0.0;
 		for (int ij = 0; ij < iLowerCount; ij++)
 		{
-			d_goods += pcProducedGoods->dGetValue(ii, ij, i_result);
+			d_goods += pcProducedGoods->dGetValue(ij, ii, i_result);
 			if (d_goods > pcCapacities->dGetValue(ii, i_result))return false;
 		}
 	}
 	return true;		
+}
+
+bool CMscnProblem::b_shop_cap_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount)
+{
+	int i_result;
+	for (int ii = 0; ii < iLowerCount; ii++)
+	{
+		double d_goods = 0.0;
+		for (int ij = 0; ij < iUpperCount; ij++)
+		{
+			d_goods += pcProducedGoods->dGetValue(ij, ii, i_result);
+			if (d_goods > pcCapacities->dGetValue(ii, i_result))return false;
+		}
+	}
+	return true;
 }
 
 double CMscnProblem::d_calculate_shops_revenue()
@@ -702,19 +697,20 @@ double CMscnProblem::d_calculate_upp_to_low_cost(CMatrix* pcUpperToLowerCosts, C
 	return d_result;
 }
 
-int CMscnProblem::i_add_pc_array_to_file(FILE* fFile, CTable* pcArray, int iArrayLength)
+int CMscnProblem::i_add_pc_array_to_file(FILE* pfFile, CTable* pcArray, int iArrayLength)
 {
 	int i_result;
+	double d_val;
 	for (int ii = 0; ii < iArrayLength; ii++)
 	{
-		int i_val = pcArray->dGetValue(ii, i_result);
+		d_val = pcArray->dGetValue(ii, i_result);
 		if (i_result != SUCCESS)return i_result;
-		fprintf(fFile, "%d ", i_val);
+		fprintf(pfFile, "%lf ", d_val);
 	}
 	return SUCCESS;
 }
 
-int CMscnProblem::i_add_pc_matrix_to_file(FILE *fFile, CMatrix* pcMatrix, int iSizeX, int iSizeY)
+int CMscnProblem::i_add_pc_matrix_to_file(FILE *pfFile, CMatrix* pcMatrix, int iSizeX, int iSizeY)
 {
 	int i_result;
 	double d_val;
@@ -724,9 +720,9 @@ int CMscnProblem::i_add_pc_matrix_to_file(FILE *fFile, CMatrix* pcMatrix, int iS
 		{
 			d_val = pcMatrix->dGetValue(ii, ij, i_result);
 			if (i_result != SUCCESS)return i_result;
-			fprintf(fFile, "%d ", d_val);
+			fprintf(pfFile, "%lf ", d_val);
 		}
-		fprintf(fFile, "\n");
+		fprintf(pfFile, "\n");
 	}
 	return SUCCESS;
 }

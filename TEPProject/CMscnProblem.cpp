@@ -22,13 +22,9 @@ int CMscnProblem::iSetSuppliersCount(int iCount)
 	i_result = pd_supp_use_costs.iSetSize(iCount);
 	if (i_result != SUCCESS)return i_result;
 	i_result = pd_supp_to_fact_costs.iSetSize(i_supp_count, i_fact_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_supp_to_fact_goods.iSetSize(i_supp_count, i_fact_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_supp_to_fact_goods_min.iSetSize(i_supp_count, i_fact_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_supp_to_fact_goods_max.iSetSize(i_supp_count, i_fact_count);
-	if (i_result != SUCCESS)return i_result;
 	return SUCCESS;
 }
 
@@ -42,13 +38,17 @@ int CMscnProblem::iSetFactoriesCount(int iCount)
 	i_result = pd_fact_use_costs.iSetSize(iCount);
 	if (i_result != SUCCESS)return i_result;
 	i_result = pd_fact_to_ware_costs.iSetSize(i_fact_count, i_ware_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_fact_to_ware_goods.iSetSize(i_fact_count, i_ware_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_fact_to_ware_goods_min.iSetSize(i_fact_count, i_ware_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_fact_to_ware_goods_max.iSetSize(i_fact_count, i_ware_count);
-	if (i_result != SUCCESS)return i_result;
+	i_result = pd_supp_to_fact_costs.iSetSize(i_supp_count, i_fact_count);
+	i_result = pd_supp_to_fact_goods.iSetSize(i_supp_count, i_fact_count);
+	i_result = pd_supp_to_fact_goods_min.iSetSize(i_supp_count, i_fact_count);
+	i_result = pd_supp_to_fact_goods_max.iSetSize(i_supp_count, i_fact_count);
+	i_result = pd_fact_to_ware_costs.iSetSize(i_fact_count, i_ware_count);
+	i_result = pd_fact_to_ware_goods.iSetSize(i_fact_count, i_ware_count);
+	i_result = pd_fact_to_ware_goods_min.iSetSize(i_fact_count, i_ware_count);
+	i_result = pd_fact_to_ware_goods_max.iSetSize(i_fact_count, i_ware_count);
 	return SUCCESS;
 }
 
@@ -61,14 +61,14 @@ int CMscnProblem::iSetWarehousesCount(int iCount)
 	if (i_result != SUCCESS)return i_result;
 	i_result = pd_ware_use_costs.iSetSize(iCount);
 	if (i_result != SUCCESS)return i_result;
+	i_result = pd_fact_to_ware_costs.iSetSize(i_fact_count, i_ware_count);
+	i_result = pd_fact_to_ware_goods.iSetSize(i_fact_count, i_ware_count);
+	i_result = pd_fact_to_ware_goods_min.iSetSize(i_fact_count, i_ware_count);
+	i_result = pd_fact_to_ware_goods_max.iSetSize(i_fact_count, i_ware_count);
 	i_result = pd_ware_to_shop_costs.iSetSize(i_ware_count, i_shop_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_ware_to_shop_goods.iSetSize(i_ware_count, i_shop_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_ware_to_shop_goods_min.iSetSize(i_ware_count, i_shop_count);
-	if (i_result != SUCCESS)return i_result;
 	i_result = pd_ware_to_shop_goods_max.iSetSize(i_ware_count, i_shop_count);
-	if (i_result != SUCCESS)return i_result;
 	return SUCCESS;
 }
 
@@ -80,6 +80,11 @@ int CMscnProblem::iSetShopsCount(int iCount)
 	i_result = pd_shop_caps.iSetSize(iCount);
 	if (i_result != SUCCESS)return i_result;
 	i_result = pd_shop_revenues.iSetSize(iCount);
+	if (i_result != SUCCESS)return i_result;
+	i_result = pd_ware_to_shop_costs.iSetSize(i_ware_count, i_shop_count);
+	i_result = pd_ware_to_shop_goods.iSetSize(i_ware_count, i_shop_count);
+	i_result = pd_ware_to_shop_goods_min.iSetSize(i_ware_count, i_shop_count);
+	i_result = pd_ware_to_shop_goods_max.iSetSize(i_ware_count, i_shop_count);
 	return i_result;
 }
 
@@ -316,22 +321,19 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}
-
-	i_result = i_get_matrix_from_file(pf_problem, pd_supp_to_fact_goods_min_max, i_supp_count, 2 * i_fact_count, SKIP_10_CHAR);
+	i_result = i_get_min_max_matrix_from_file(pf_problem, &pd_supp_to_fact_goods_min, &pd_supp_to_fact_goods_max, i_supp_count, i_fact_count, SKIP_10_CHAR);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
-
-	i_result = i_get_matrix_from_file(pf_problem, pd_fact_to_ware_goods_min_max, i_fact_count, 2 * i_ware_count, SKIP_10_CHAR);
+	i_result = i_get_min_max_matrix_from_file(pf_problem, &pd_fact_to_ware_goods_min, &pd_fact_to_ware_goods_max, i_fact_count, i_ware_count, SKIP_10_CHAR);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
 	}
-
-	i_result = i_get_matrix_from_file(pf_problem, pd_ware__to_shop_goods_min_max, i_ware_count, 2 * i_shop_count, SKIP_10_CHAR);
+	i_result = i_get_min_max_matrix_from_file(pf_problem, &pd_ware_to_shop_goods_min, &pd_ware_to_shop_goods_max, i_ware_count, i_shop_count, SKIP_10_CHAR);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
@@ -502,27 +504,7 @@ int CMscnProblem::iSaveProblemToFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}
-	fprintf(pf_problem, "\nxdminmax\n");
-	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_supp_to_fact_goods_min_max, i_supp_count, i_fact_count * 2);
-	if (i_result != SUCCESS)
-	{
-		fclose(pf_problem);
-		return i_result;
-	}
-	fprintf(pf_problem, "\nxfminmax\n");
-	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_fact_to_ware_goods_min_max, i_fact_count, i_ware_count * 2);
-	if (i_result != SUCCESS)
-	{
-		fclose(pf_problem);
-		return i_result;
-	}
-	fprintf(pf_problem, "\nxmminmax\n");
-	i_result = i_add_pc_matrix_to_file(pf_problem, &pd_ware__to_shop_goods_min_max, i_ware_count, i_shop_count * 2);
-	if (i_result != SUCCESS)
-	{
-		fclose(pf_problem);
-		return i_result;
-	}
+
 	fclose(pf_problem);
 	return SUCCESS;
 }
@@ -740,6 +722,38 @@ int CMscnProblem::i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iS
 			std::cout << d_read_value << " ";
 			i_result = pcMatrix->iSetValue(d_read_value, ii, ij);
 			if (i_result != SUCCESS) return i_result;
+		}
+		std::cout << "\n";
+	}
+	return SUCCESS;
+}
+
+int CMscnProblem::i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMatrix, CMatrix* pcMaxMatrix, int iSizeX, int iSizeY, int iFileOffset)
+{
+	double d_read_value;
+	int i_result;
+	fseek(pfFile, iFileOffset, SEEK_CUR);
+	std::cout << "\nreading minmax matrix:\n";
+	for (int ii = 0; ii < iSizeX; ii++)
+	{
+		int i_counter = 0;
+		for (int ij = 0; ij < iSizeY*2; ij++)
+		{
+			fscanf(pfFile, "%lf", &d_read_value);
+			if (ij % 2 == 0)
+			{
+				i_result = pcMinMatrix->iSetValue(d_read_value, ii, i_counter);
+				std::cout <<"min:"<< d_read_value << " ";
+				if (i_result != SUCCESS) return i_result;
+			}
+			else
+			{
+				i_result = pcMaxMatrix->iSetValue(d_read_value, ii, i_counter);
+				if (i_result != SUCCESS) return i_result;
+				std::cout << "max:" << d_read_value << " ";
+				i_counter++;
+			}
+			
 		}
 		std::cout << "\n";
 	}

@@ -96,4 +96,5 @@ private:
 	int i_add_pc_matrix_to_file(FILE *fFile, CMatrix* pcMatrix, int iSizeX, int iSizeY);
 	int i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArrayLength);
 	int i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iSizeX, int iSizeY, int iFileOffset);
+	int i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMatrix, CMatrix* pcMaxMatrix, int iSizeX, int iSizeY, int iFileOffset);
 };

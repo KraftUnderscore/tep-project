@@ -1,3 +1,5 @@
+#include "pch.h"
+#include <iostream>
 #include "CMatrix.h"
 
 CMatrix::CMatrix(int iRows, int iColumns, int& iError)

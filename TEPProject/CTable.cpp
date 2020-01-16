@@ -62,3 +62,8 @@ double CTable::dGetValue(int iIndex, int& iError)
 	iError = SUCCESS;
 	return pd_tab[iIndex];
 }
+
+void CTable::vPrint()
+{
+	for (int ii = 0; ii < i_length; ii++)std::cout << pd_tab[ii] << " ";
+}

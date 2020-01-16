@@ -11,6 +11,7 @@ public:
 	int iSetValue(double dValue, int iIndex);
 	int iGetLength();
 	double dGetValue(int iIndex, int& iError);
+	void vPrint();
 private:
 	int i_length;
 	double* pd_tab;

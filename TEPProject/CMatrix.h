@@ -8,6 +8,7 @@ public:
 	int iSetSize(int iRows, int iColumns);
 	int iSetValue(double dValue, int iRow, int iColumn);
 	double dGetValue(int iRow, int iColumn, int& iError);
+	void vPrint();
 private:
 	int i_rows, i_columns;
 	CTable c_matrix;

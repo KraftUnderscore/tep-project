@@ -114,17 +114,41 @@ int CMscnProblem::iSetShopCap(double dCap, int iIndex)
 
 int CMscnProblem::iSetSuppToFactCost(double dCost, int iUpperIndex, int iLowerIndex)
 {
+	if (dCost < 0.0)return NEGATIVE_COST;
 	return pd_supp_to_fact_costs.iSetValue(dCost, iUpperIndex, iLowerIndex);
 }
 
 int CMscnProblem::iSetFactToWareCost(double dCost, int iUpperIndex, int iLowerIndex)
 {
+	if (dCost < 0.0)return NEGATIVE_COST;
 	return pd_fact_to_ware_costs.iSetValue(dCost, iUpperIndex, iLowerIndex);
 }
 
 int CMscnProblem::iSetWareToShopCost(double dCost, int iUpperIndex, int iLowerIndex)
 {
+	if (dCost < 0.0)return NEGATIVE_COST;
 	return pd_ware_to_shop_costs.iSetValue(dCost, iUpperIndex, iLowerIndex);
+}
+
+int CMscnProblem::iSetSuppUseCost(double dCost, int iIndex)
+{
+	if (dCost < 0.0)return NEGATIVE_COST;
+	return pd_supp_use_costs.iSetValue(dCost, iIndex);
+}
+int CMscnProblem::iSetFactUseCost(double dCost, int iIndex)
+{
+	if (dCost < 0.0)return NEGATIVE_COST;
+	return pd_fact_use_costs.iSetValue(dCost, iIndex);
+}
+int CMscnProblem::iSetWareUseCost(double dCost, int iIndex)
+{
+	if (dCost < 0.0)return NEGATIVE_COST;
+	return pd_ware_use_costs.iSetValue(dCost, iIndex);
+}
+int CMscnProblem::iSetShopRevenue(double dRev, int iIndex)
+{
+	if (dRev < 0.0)return NEGATIVE_REVENUE;
+	return pd_shop_revenues.iSetValue(dRev, iIndex);
 }
 
 bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)	
@@ -201,6 +225,9 @@ double CMscnProblem::dGetQuality(double *pdSolution, int* iError)
 	double d_shop_rev = d_calculate_shops_revenue();
 	double d_usages_costs = d_calculate_usages_costs();
 	double d_prod_trans_costs = d_calculate_upp_to_low_costs();
+	std::cout << "P=" << d_shop_rev;
+	std::cout << "\nKu=" << d_usages_costs;
+	std::cout << "\nKt=" << d_prod_trans_costs << "\n";
 	return d_shop_rev - d_usages_costs - d_prod_trans_costs;
 }
 
@@ -219,7 +246,6 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}
-	std::cout << "read int : " << i_read_value << "\n";
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
 	i_result = iSetFactoriesCount(i_read_value);
 	if (i_result != SUCCESS)
@@ -227,7 +253,6 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}	
-	std::cout << "read int : " << i_read_value << "\n";
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
 	i_result = iSetWarehousesCount(i_read_value);
 	if (i_result != SUCCESS)
@@ -235,7 +260,6 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}	
-	std::cout << "read int : " << i_read_value << "\n";
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
 	i_result = iSetShopsCount(i_read_value);
 	if (i_result != SUCCESS)
@@ -243,7 +267,6 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 		fclose(pf_problem);
 		return i_result;
 	}
-	std::cout << "read int : " << i_read_value << "\n";
 
 	i_result = i_get_array_from_file(pf_problem, &pd_supp_caps, i_supp_count);
 	if (i_result != SUCCESS)
@@ -379,12 +402,13 @@ int CMscnProblem::iLoadSolutionFromFile(std::string sFileName, double **pdSoluti
 		fclose(pf_problem);
 		return i_result;
 	}
-
 	double* pd_solution = new double[i_supp_count_read*i_fact_count_read + i_fact_count_read * i_ware_count_read + i_ware_count_read * i_shop_count_read];
 	int i_offset = 0;
 	for (int ii = 0; ii < i_supp_count_read; ii++)
 		for (int ij = 0; ij < i_fact_count_read; ij++)
+		{
 			pd_solution[ii*i_fact_count_read + ij + i_offset] = pd_supp_to_fact_goods.dGetValue(ii, ij, i_result);
+		}
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
@@ -393,7 +417,9 @@ int CMscnProblem::iLoadSolutionFromFile(std::string sFileName, double **pdSoluti
 	i_offset += i_supp_count_read * i_fact_count_read;
 	for (int ii = 0; ii < i_fact_count_read; ii++)
 		for (int ij = 0; ij < i_ware_count_read; ij++)
+		{
 			pd_solution[ii*i_ware_count_read + ij + i_offset] = pd_fact_to_ware_goods.dGetValue(ii, ij, i_result);
+		}
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
@@ -402,7 +428,9 @@ int CMscnProblem::iLoadSolutionFromFile(std::string sFileName, double **pdSoluti
 	i_offset += i_fact_count_read * i_ware_count_read;
 	for (int ii = 0; ii < i_ware_count_read; ii++)
 		for (int ij = 0; ij < i_shop_count_read; ij++)
+		{
 			pd_solution[ii*i_shop_count_read + ij + i_offset] = pd_ware_to_shop_goods.dGetValue(ii, ij, i_result);
+		}
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
@@ -556,7 +584,7 @@ int CMscnProblem::i_load_solution(double *pdSolution)
 	int i_solution_offset = 0;
 	i_result = i_load_part_of_solution(pdSolution, &pd_supp_to_fact_goods, &pd_supp_to_fact_goods_min, &pd_supp_to_fact_goods_max, i_solution_offset, i_supp_count, i_fact_count);
 	if (i_result != SUCCESS) return i_result;
-	i_solution_offset += i_supp_count * i_fact_count - 1;
+	i_solution_offset += i_supp_count * i_fact_count;
 	i_result = i_load_part_of_solution(pdSolution, &pd_fact_to_ware_goods, &pd_fact_to_ware_goods_min, &pd_fact_to_ware_goods_max, i_solution_offset, i_fact_count, i_ware_count);
 	if (i_result != SUCCESS) return i_result;
 	i_solution_offset += i_fact_count * i_ware_count;
@@ -568,6 +596,7 @@ int CMscnProblem::i_load_part_of_solution(double *pdSolution, CMatrix* pcUpperTo
 {
 	int i_result;
 	for (int ii = 0; ii < iUpperCount; ii++)
+	{
 		for (int ij = 0; ij < iLowerCount; ij++)
 		{
 			double d_value = pdSolution[ii*iLowerCount + ij + iSolutionOffset];
@@ -577,6 +606,8 @@ int CMscnProblem::i_load_part_of_solution(double *pdSolution, CMatrix* pcUpperTo
 			pcUpperToLowerGoods->iSetValue(d_value, ii, ij);
 			if (i_result != SUCCESS)return i_result;
 		}
+	}
+		
 	return SUCCESS;
 }
 
@@ -616,8 +647,12 @@ double CMscnProblem::d_calculate_shops_revenue()
 	double d_result = 0.0;
 	int i_result;
 	for (int ii = 0; ii < i_ware_count; ii++)
+	{
 		for (int ij = 0; ij < i_shop_count; ij++)
+		{
 			d_result += pd_shop_revenues.dGetValue(ij, i_result)  * pd_ware_to_shop_goods.dGetValue(ii, ij, i_result);
+		}
+	}
 
 	return d_result;
 }
@@ -633,13 +668,17 @@ double CMscnProblem::d_calculate_usages_costs()
 
 double CMscnProblem::d_calculate_usage_cost(CMatrix* pcUpperToLowerGoods, CTable* pcUsageCosts, int iUpperCount, int iLowerCount)
 {
-	double d_result = 0.0;
+	double d_result = 0.0, d_sum;
 	int i_result;
 	for (int ii = 0; ii < iUpperCount; ii++)
+	{
+		d_sum = 0.0;
 		for (int ij = 0; ij < iLowerCount; ij++)
-			if (pcUpperToLowerGoods->dGetValue(ii, ij, i_result) > 0)
-				d_result += pcUsageCosts->dGetValue(ij, i_result) * pcUpperToLowerGoods->dGetValue(ii, ij, i_result);
+			d_sum += pcUpperToLowerGoods->dGetValue(ii, ij, i_result);
 
+		if (d_sum > 0)
+			d_result += pcUsageCosts->dGetValue(ii, i_result);
+	}
 	return d_result;
 }
 
@@ -697,11 +736,9 @@ int CMscnProblem::i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArra
 	double d_read_value;
 	int i_result;
 	fseek(pfFile, 4, SEEK_CUR);
-	std::cout << "\nreading array:\n";
 	for (int ii = 0; ii < iArrayLength; ii++)
 	{
 		fscanf(pfFile, "%lf", &d_read_value);
-		std::cout << d_read_value << " ";
 		i_result = pcArray->iSetValue(d_read_value, ii);
 		if (i_result != SUCCESS) return i_result;
 	}
@@ -713,17 +750,14 @@ int CMscnProblem::i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iS
 	double d_read_value;
 	int i_result;
 	fseek(pfFile, iFileOffset, SEEK_CUR);
-	std::cout << "\nreading matrix:\n";
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		for (int ij = 0; ij < iSizeY; ij++)
 		{
 			fscanf(pfFile, "%lf", &d_read_value);
-			std::cout << d_read_value << " ";
 			i_result = pcMatrix->iSetValue(d_read_value, ii, ij);
 			if (i_result != SUCCESS) return i_result;
 		}
-		std::cout << "\n";
 	}
 	return SUCCESS;
 }
@@ -733,7 +767,6 @@ int CMscnProblem::i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMat
 	double d_read_value;
 	int i_result;
 	fseek(pfFile, iFileOffset, SEEK_CUR);
-	std::cout << "\nreading minmax matrix:\n";
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		int i_counter = 0;
@@ -743,19 +776,16 @@ int CMscnProblem::i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMat
 			if (ij % 2 == 0)
 			{
 				i_result = pcMinMatrix->iSetValue(d_read_value, ii, i_counter);
-				std::cout <<"min:"<< d_read_value << " ";
 				if (i_result != SUCCESS) return i_result;
 			}
 			else
 			{
 				i_result = pcMaxMatrix->iSetValue(d_read_value, ii, i_counter);
 				if (i_result != SUCCESS) return i_result;
-				std::cout << "max:" << d_read_value << " ";
 				i_counter++;
 			}
 			
 		}
-		std::cout << "\n";
 	}
 	return SUCCESS;
 }

@@ -24,6 +24,11 @@ public:
 	int iSetFactToWareCost(double dCost, int iUpperIndex, int iLowerIndex);
 	int iSetWareToShopCost(double dCost, int iUpperIndex, int iLowerIndex);
 
+	int iSetSuppUseCost(double dCost, int iIndex);
+	int iSetFactUseCost(double dCost, int iIndex);
+	int iSetWareUseCost(double dCost, int iIndex);
+	int iSetShopRevenue(double dRev, int iIndex);
+
 	bool bConstraintsSatisified(double *pdSolution, int* iError);
 
 	double dGetQuality(double *pdSolution, int* iError);

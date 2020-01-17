@@ -818,12 +818,14 @@ int CMscnProblem::i_add_min_max_matrix_to_file(FILE *pfFile, CMatrix* pcMinMatri
 
 int CMscnProblem::i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArrayLength) 
 {
-	double d_read_value;
+	int i_read_1, i_read_2;
 	int i_result;
 	fseek(pfFile, 4, SEEK_CUR);
 	for (int ii = 0; ii < iArrayLength; ii++)
 	{
-		fscanf(pfFile, "%lf", &d_read_value);
+		fscanf(pfFile, "%d.%4d ", &i_read_1, &i_read_2);
+		if (i_read_1 < 0 || i_read_2 < 0) return NEGATIVE_VALUE;
+		double d_read_value = (double)(i_read_1 + i_read_2 / 1000.0);
 		i_result = pcArray->iSetValue(d_read_value, ii);
 		if (i_result != SUCCESS) return i_result;
 	}
@@ -832,14 +834,16 @@ int CMscnProblem::i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArra
 
 int CMscnProblem::i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iSizeX, int iSizeY, int iFileOffset)
 {
-	double d_read_value;
+	int i_read_1, i_read_2;
 	int i_result;
 	fseek(pfFile, iFileOffset, SEEK_CUR);
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		for (int ij = 0; ij < iSizeY; ij++)
 		{
-			fscanf(pfFile, "%lf", &d_read_value);
+			fscanf(pfFile, "%d.%4d ", &i_read_1, &i_read_2);
+			if (i_read_1 < 0 || i_read_2 < 0) return NEGATIVE_VALUE;
+			double d_read_value = (double)(i_read_1 + i_read_2 / 1000.0);
 			i_result = pcMatrix->iSetValue(d_read_value, ii, ij);
 			if (i_result != SUCCESS) return i_result;
 		}
@@ -849,15 +853,17 @@ int CMscnProblem::i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iS
 
 int CMscnProblem::i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMatrix, CMatrix* pcMaxMatrix, int iSizeX, int iSizeY, int iFileOffset)
 {
+	int i_read_1, i_read_2;
 	int i_result;
-	double d_read_value;
 	fseek(pfFile, iFileOffset, SEEK_CUR);
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		int i_counter = 0;
 		for (int ij = 0; ij < iSizeY*2; ij++)
 		{
-			fscanf(pfFile, "%lf", &d_read_value);
+			fscanf(pfFile, "%d.%4d ", &i_read_1, &i_read_2);
+			if (i_read_1 < 0 || i_read_2 < 0) return NEGATIVE_VALUE;
+			double d_read_value = (double)(i_read_1 + i_read_2 / 1000.0);
 			if (ij % 2 == 0)
 			{
 				i_result = pcMinMatrix->iSetValue(d_read_value, ii, i_counter);

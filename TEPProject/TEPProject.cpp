@@ -1,10 +1,18 @@
 #include "pch.h"
 #include <iostream>
 #include "CMscnProblem.h"
+#include "CRandom.h"
 
 int main()
 {
-	CMscnProblem t;
+	CRandom r;
+	r.iSetIntRange(-10, 10);
+	r.iSetDoubleRange(20.0, 200.0);
+	for (int i = 0; i < 10; i++)
+	{
+		std::cout << r.iGetInt() << "; " << r.dGetDouble() << "\n";
+	}
+	/*CMscnProblem t;
 	int i_result;
 
 	i_result = t.iLoadProblemFromFile("C:\\Users\\Sebastian\\Desktop\\teppro2.txt");
@@ -21,5 +29,5 @@ int main()
 	std::cout << "spelnia: " << t.bConstraintsSatisified(pd_solution, &i_result) << "\n";
 	std::cout << "blad sprawdzenia: " << i_result << "\n";
 
-	delete pd_solution;
+	delete pd_solution;*/
 }

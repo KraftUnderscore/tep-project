@@ -1,0 +1,41 @@
+#include "pch.h"
+#include "CRandom.h"
+
+CRandom::CRandom()
+{
+	vSetSeed(DEFAULT_SEED);
+}
+
+CRandom::CRandom(int iSeed)
+{
+	vSetSeed(iSeed);
+}
+
+void CRandom::vSetSeed(int iSeed)
+{
+	i_seed = iSeed;
+	m_engine.seed(i_seed);
+}
+int CRandom::iSetIntRange(int iMin, int iMax)
+{
+	if (iMax < iMin) return MAX_LESS_THAN_MIN;
+	if (iMin > iMax)return MIN_GREATER_THAN_MAX;
+	u_int_generator = std::uniform_int_distribution<int>(iMin, iMax);
+}
+
+int CRandom::iSetDoubleRange(double dMin, double dMax)
+{
+	if (dMax < dMin) return MAX_LESS_THAN_MIN;
+	if (dMin > dMax)return MIN_GREATER_THAN_MAX;
+	u_double_generator = std::uniform_real_distribution<double>(dMin, dMax);
+}
+
+int CRandom::iGetInt()
+{
+	return u_int_generator(m_engine);
+}
+
+double CRandom::dGetDouble()
+{
+	return u_double_generator(m_engine);
+}

@@ -4,7 +4,7 @@
 #include <sstream>
 #pragma warning(disable : 4996) //fopen warning
 
-CMscnProblem::CMscnProblem() 
+CMscnProblem::CMscnProblem()
 {
 	i_supp_count = 0;
 	i_fact_count = 0;
@@ -154,12 +154,12 @@ int CMscnProblem::iSetShopRevenue(double dRev, int iIndex)
 	return c_shop_revenues.iSetValue(dRev, iIndex);
 }
 
-bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)	
+bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)
 {
 	int i_result = i_load_solution(pdSolution);
 	if (i_result != SUCCESS)
 	{
-		if(iError!=NULL)
+		if (iError != NULL)
 			*iError = i_result;
 		return false;
 	}
@@ -215,7 +215,7 @@ bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)
 double CMscnProblem::dGetMin(int iIndex, int& iError)
 {
 	if (iIndex < i_supp_count*i_fact_count)return c_supp_to_fact_goods_min.dGetValue(iIndex, iError);
-	else if (iIndex < i_supp_count*i_fact_count + i_fact_count*i_ware_count)return c_fact_to_ware_goods_min.dGetValue(iIndex - i_supp_count * i_fact_count, iError);
+	else if (iIndex < i_supp_count*i_fact_count + i_fact_count * i_ware_count)return c_fact_to_ware_goods_min.dGetValue(iIndex - i_supp_count * i_fact_count, iError);
 	else if (iIndex < i_supp_count*i_fact_count + i_fact_count * i_ware_count + i_ware_count * i_shop_count)return c_ware_to_shop_goods_min.dGetValue(iIndex - (i_supp_count*i_fact_count + i_fact_count * i_ware_count), iError);
 	iError = INDEX_OUT_OF_RANGE;
 	return 0.0;
@@ -251,10 +251,10 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 {
 	FILE* pf_problem = fopen(sFileName.c_str(), "r");
 	if (pf_problem == NULL)return FAILED_OPENING_FILE;
-	
+
 	int i_read_value, i_result;
 	char c_dump;
-	
+
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
 	i_result = iSetSuppliersCount(i_read_value);
 	if (i_result != SUCCESS)
@@ -268,14 +268,14 @@ int CMscnProblem::iLoadProblemFromFile(std::string sFileName)
 	{
 		fclose(pf_problem);
 		return i_result;
-	}	
+	}
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
 	i_result = iSetWarehousesCount(i_read_value);
 	if (i_result != SUCCESS)
 	{
 		fclose(pf_problem);
 		return i_result;
-	}	
+	}
 	fscanf(pf_problem, "%c%i%c", &c_dump, &i_read_value, &c_dump);
 	i_result = iSetShopsCount(i_read_value);
 	if (i_result != SUCCESS)
@@ -656,7 +656,7 @@ bool CMscnProblem::b_capacity_check(CMatrix* pcProducedGoods, CTable* pcCapaciti
 			if (d_goods > pcCapacities->dGetValue(ii, i_result))return false;
 		}
 	}
-	return true;		
+	return true;
 }
 
 bool CMscnProblem::b_shop_cap_check(CMatrix* pcProducedGoods, CTable* pcCapacities, int iUpperCount, int iLowerCount)
@@ -816,16 +816,15 @@ int CMscnProblem::i_add_min_max_matrix_to_file(FILE *pfFile, CMatrix* pcMinMatri
 	return SUCCESS;
 }
 
-int CMscnProblem::i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArrayLength) 
+int CMscnProblem::i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArrayLength)
 {
-	int i_read_1, i_read_2;
+	double d_read_value;
 	int i_result;
-	fseek(pfFile, 4, SEEK_CUR);
+	fseek(pfFile, SKIP_4_CHAR, SEEK_CUR);
 	for (int ii = 0; ii < iArrayLength; ii++)
 	{
-		fscanf(pfFile, "%d.%4d ", &i_read_1, &i_read_2);
-		if (i_read_1 < 0 || i_read_2 < 0) return NEGATIVE_VALUE;
-		double d_read_value = (double)(i_read_1 + i_read_2 / 1000.0);
+		fscanf(pfFile, "%lf", &d_read_value);
+		if (d_read_value < 0)return NEGATIVE_VALUE;
 		i_result = pcArray->iSetValue(d_read_value, ii);
 		if (i_result != SUCCESS) return i_result;
 	}
@@ -834,16 +833,15 @@ int CMscnProblem::i_get_array_from_file(FILE *pfFile, CTable* pcArray, int iArra
 
 int CMscnProblem::i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iSizeX, int iSizeY, int iFileOffset)
 {
-	int i_read_1, i_read_2;
+	double d_read_value;
 	int i_result;
 	fseek(pfFile, iFileOffset, SEEK_CUR);
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		for (int ij = 0; ij < iSizeY; ij++)
 		{
-			fscanf(pfFile, "%d.%4d ", &i_read_1, &i_read_2);
-			if (i_read_1 < 0 || i_read_2 < 0) return NEGATIVE_VALUE;
-			double d_read_value = (double)(i_read_1 + i_read_2 / 1000.0);
+			fscanf(pfFile, "%lf", &d_read_value);
+			if (d_read_value < 0)return NEGATIVE_VALUE;
 			i_result = pcMatrix->iSetValue(d_read_value, ii, ij);
 			if (i_result != SUCCESS) return i_result;
 		}
@@ -853,17 +851,16 @@ int CMscnProblem::i_get_matrix_from_file(FILE *pfFile, CMatrix* pcMatrix, int iS
 
 int CMscnProblem::i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMatrix, CMatrix* pcMaxMatrix, int iSizeX, int iSizeY, int iFileOffset)
 {
-	int i_read_1, i_read_2;
 	int i_result;
+	double d_read_value;
 	fseek(pfFile, iFileOffset, SEEK_CUR);
 	for (int ii = 0; ii < iSizeX; ii++)
 	{
 		int i_counter = 0;
-		for (int ij = 0; ij < iSizeY*2; ij++)
+		for (int ij = 0; ij < iSizeY * 2; ij++)
 		{
-			fscanf(pfFile, "%d.%4d ", &i_read_1, &i_read_2);
-			if (i_read_1 < 0 || i_read_2 < 0) return NEGATIVE_VALUE;
-			double d_read_value = (double)(i_read_1 + i_read_2 / 1000.0);
+			fscanf(pfFile, "%lf", &d_read_value);
+			if (d_read_value < 0)return NEGATIVE_VALUE;
 			if (ij % 2 == 0)
 			{
 				i_result = pcMinMatrix->iSetValue(d_read_value, ii, i_counter);
@@ -875,7 +872,7 @@ int CMscnProblem::i_get_min_max_matrix_from_file(FILE *pfFile, CMatrix* pcMinMat
 				if (i_result != SUCCESS) return i_result;
 				i_counter++;
 			}
-			
+
 		}
 	}
 	return SUCCESS;

@@ -16,11 +16,13 @@ void CRandom::vSetSeed(int iSeed)
 	i_seed = iSeed;
 	m_engine.seed(i_seed);
 }
+
 int CRandom::iSetIntRange(int iMin, int iMax)
 {
 	if (iMax < iMin) return MAX_LESS_THAN_MIN;
 	if (iMin > iMax)return MIN_GREATER_THAN_MAX;
 	u_int_generator = std::uniform_int_distribution<int>(iMin, iMax);
+	return SUCCESS;
 }
 
 int CRandom::iSetDoubleRange(double dMin, double dMax)
@@ -28,6 +30,7 @@ int CRandom::iSetDoubleRange(double dMin, double dMax)
 	if (dMax < dMin) return MAX_LESS_THAN_MIN;
 	if (dMin > dMax)return MIN_GREATER_THAN_MAX;
 	u_double_generator = std::uniform_real_distribution<double>(dMin, dMax);
+	return SUCCESS;
 }
 
 int CRandom::iGetInt()

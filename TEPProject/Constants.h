@@ -4,7 +4,14 @@
 #define SKIP_4_CHAR 4
 #define SKIP_10_CHAR 10
 #define DEFAULT_SEED 1
+#define CAPS_MIN 100.0
+#define CAPS_MAX 1000.0
+#define COSTS_MIN 50.0
+#define COSTS_MAX 250.0
+#define USE_COSTS_MIN 10
+#define USE_COSTS_MAX 50
 
+//errors
 #define SUCCESS 100
 #define COUNT_LESS_THAN_MIN 101
 #define NULL_SOLUTION 102
@@ -21,3 +28,4 @@
 #define NEGATIVE_VALUE 113
 #define MAX_LESS_THAN_MIN 114
 #define MIN_GREATER_THAN_MAX 115
+#define COUNTS_NOT_SET 116

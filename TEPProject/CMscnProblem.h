@@ -2,6 +2,8 @@
 #include "Constants.h"
 #include "CTable.h"
 #include "CMatrix.h"
+#include "CRandom.h"
+
 #pragma once
 
 
@@ -29,6 +31,8 @@ public:
 	int iSetWareUseCost(double dCost, int iIndex);
 	int iSetShopRevenue(double dRev, int iIndex);
 
+	int iGenerateInstance(int iInstanceSeed);
+
 	bool bConstraintsSatisified(double *pdSolution, int* iError);
 
 	double dGetMin(int iIndex, int& iError);
@@ -43,6 +47,7 @@ public:
 	int iSaveSolutionToFile(std::string sFileName);
 
 private:
+
 	//liczba dostawcow, fabryk, magazynow, sklepow
 	int i_supp_count;	//D
 	int i_fact_count;	//F

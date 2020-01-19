@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "CMscnProblem.h"
-#include <iostream>
-#include <sstream>
 #pragma warning(disable : 4996) //fopen warning
 
 CMscnProblem::CMscnProblem()
@@ -152,6 +150,47 @@ int CMscnProblem::iSetShopRevenue(double dRev, int iIndex)
 {
 	if (dRev < 0.0)return NEGATIVE_REVENUE;
 	return c_shop_revenues.iSetValue(dRev, iIndex);
+}
+
+int CMscnProblem::iGenerateInstance(int iInstanceSeed)
+{
+	if (i_supp_count == 0 || i_fact_count == 0 || i_ware_count == 0 || i_shop_count == 0)return COUNTS_NOT_SET;
+	CRandom c_rand(iInstanceSeed);
+	c_rand.iSetDoubleRange(CAPS_MIN, CAPS_MAX);
+	//sd, sf, sm, ss
+	for (int ii = 0; ii < c_supp_caps.iGetLength(); ii++)c_supp_caps.iSetValue(c_rand.dGetDouble(), ii);
+	for (int ii = 0; ii < c_fact_caps.iGetLength(); ii++)c_fact_caps.iSetValue(c_rand.dGetDouble(), ii);
+	for (int ii = 0; ii < c_ware_caps.iGetLength(); ii++)c_ware_caps.iSetValue(c_rand.dGetDouble(), ii);
+	for (int ii = 0; ii < c_shop_caps.iGetLength(); ii++)c_shop_caps.iSetValue(c_rand.dGetDouble(), ii);
+
+	c_rand.iSetDoubleRange(COSTS_MIN, COSTS_MAX);
+	//cd, cf, cm
+	for (int ii = 0; ii < c_supp_to_fact_costs.iGetLength(); ii++)c_supp_to_fact_costs.iSetValue(c_rand.dGetDouble(), ii);
+	for (int ii = 0; ii < c_fact_to_ware_costs.iGetLength(); ii++)c_fact_to_ware_costs.iSetValue(c_rand.dGetDouble(), ii);
+	for (int ii = 0; ii < c_ware_to_shop_costs.iGetLength(); ii++)c_ware_to_shop_costs.iSetValue(c_rand.dGetDouble(), ii);
+
+	c_rand.iSetIntRange(USE_COSTS_MIN, USE_COSTS_MAX);
+	//ud, uf, um, p
+	for (int ii = 0; ii < c_supp_use_costs.iGetLength(); ii++)c_supp_use_costs.iSetValue(c_rand.iGetInt(), ii);
+	for (int ii = 0; ii < c_fact_use_costs.iGetLength(); ii++)c_fact_use_costs.iSetValue(c_rand.iGetInt(), ii);
+	for (int ii = 0; ii < c_ware_use_costs.iGetLength(); ii++)c_ware_use_costs.iSetValue(c_rand.iGetInt(), ii);
+	for (int ii = 0; ii < c_shop_revenues.iGetLength(); ii++)c_shop_revenues.iSetValue(c_rand.iGetInt(), ii);
+	//mins
+	c_rand.iSetDoubleRange(CAPS_MIN / (i_supp_count * 2), CAPS_MIN / i_supp_count);
+	for (int ii = 0; ii < c_supp_to_fact_goods_min.iGetLength(); ii++)c_supp_to_fact_goods_min.iSetValue(c_rand.dGetDouble(), ii);
+	c_rand.iSetDoubleRange(CAPS_MIN / (i_fact_count * 2), CAPS_MIN / i_fact_count);
+	for (int ii = 0; ii < c_fact_to_ware_goods_min.iGetLength(); ii++)c_fact_to_ware_goods_min.iSetValue(c_rand.dGetDouble(), ii);
+	c_rand.iSetDoubleRange(CAPS_MIN / (i_ware_count * 2), CAPS_MIN / i_ware_count);
+	for (int ii = 0; ii < c_ware_to_shop_goods_min.iGetLength(); ii++)c_ware_to_shop_goods_min.iSetValue(c_rand.dGetDouble(), ii);
+	//maxes
+	c_rand.iSetDoubleRange(CAPS_MAX / (i_supp_count * 2), CAPS_MAX / i_supp_count);
+	for (int ii = 0; ii < c_supp_to_fact_goods_max.iGetLength(); ii++)c_supp_to_fact_goods_max.iSetValue(c_rand.dGetDouble(), ii);
+	c_rand.iSetDoubleRange(CAPS_MAX / (i_fact_count * 2), CAPS_MAX / i_fact_count);
+	for (int ii = 0; ii < c_fact_to_ware_goods_max.iGetLength(); ii++)c_fact_to_ware_goods_max.iSetValue(c_rand.dGetDouble(), ii);
+	c_rand.iSetDoubleRange(CAPS_MAX / (i_ware_count * 2), CAPS_MAX / i_ware_count);
+	for (int ii = 0; ii < c_ware_to_shop_goods_max.iGetLength(); ii++)c_ware_to_shop_goods_max.iSetValue(c_rand.dGetDouble(), ii);
+
+	return SUCCESS;
 }
 
 bool CMscnProblem::bConstraintsSatisified(double *pdSolution, int* iError)

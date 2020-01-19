@@ -20,18 +20,27 @@ int CMatrix::iSetSize(int iRows, int iColumns)
 	}
 	return i_result;
 }
+
 int CMatrix::iSetValue(double dValue, int iRow, int iColumn)
 {
 	return c_matrix.iSetValue(dValue, iRow*i_columns + iColumn);
 }
+
+int CMatrix::iSetValue(double dValue, int iIndex)
+{
+	return c_matrix.iSetValue(dValue, iIndex);
+}
+
 double CMatrix::dGetValue(int iRow, int iColumn, int& iError)
 {
 	return c_matrix.dGetValue(iRow*i_columns + iColumn, iError);
 }
+
 double CMatrix::dGetValue(int iIndex, int& iError)
 {
 	return c_matrix.dGetValue(iIndex, iError);
 }
+
 void CMatrix::vPrint()
 {
 	int i_result;

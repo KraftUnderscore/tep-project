@@ -12,6 +12,11 @@ class CMscnProblem
 public:
 	CMscnProblem();
 
+	int iGetSuppliersCount() { return i_supp_count; }
+	int iGetFactoriesCount() { return i_fact_count; }
+	int iGetWarehousesCount() { return i_ware_count; }
+	int iGetShopsCount() { return i_shop_count; }
+
 	int iSetSuppliersCount(int iCount);
 	int iSetFactoriesCount(int iCount);
 	int iSetWarehousesCount(int iCount);

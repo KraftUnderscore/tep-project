@@ -10,6 +10,7 @@
 #define COSTS_MAX 250.0
 #define USE_COSTS_MIN 10
 #define USE_COSTS_MAX 50
+#define RANDOM_SEARCH_DEFAULT_COUNT 1000
 
 //errors
 #define SUCCESS 100

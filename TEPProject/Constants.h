@@ -4,12 +4,34 @@
 #define SKIP_4_CHAR 4
 #define SKIP_10_CHAR 10
 #define DEFAULT_SEED 1
-#define CAPS_MIN 100.0
-#define CAPS_MAX 1000.0
-#define COSTS_MIN 50.0
-#define COSTS_MAX 250.0
-#define USE_COSTS_MIN 10
-#define USE_COSTS_MAX 50
+
+#define CAPS_MIN 39.7
+#define CAPS_MAX 45.0
+
+#define COSTS_MIN 2
+#define COSTS_MAX 12
+
+#define USE_COSTS_MIN 5
+#define USE_COSTS_MAX 100
+
+#define REVENUE_MIN 30
+#define REVENUE_MAX 200
+
+#define S_F_GOODS_MIN_MIN 10.0
+#define S_F_GOODS_MIN_MAX 12.5
+#define S_F_GOODS_MAX_MIN 15.0
+#define S_F_GOODS_MAX_MAX 20.0
+
+#define F_W_GOODS_MIN_MIN 7.5
+#define F_W_GOODS_MIN_MAX 9.8
+#define F_W_GOODS_MAX_MIN 10.0
+#define F_W_GOODS_MAX_MAX 15.0
+
+#define W_S_GOODS_MIN_MIN 1.2
+#define W_S_GOODS_MIN_MAX 4.7
+#define W_S_GOODS_MAX_MIN 5.0
+#define W_S_GOODS_MAX_MAX 10.0
+
 #define RANDOM_SEARCH_DEFAULT_COUNT 1000
 
 //errors

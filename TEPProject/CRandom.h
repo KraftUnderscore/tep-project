@@ -13,7 +13,6 @@ public:
 	int iGetSeed() { return i_seed; }
 	int iGetInt();
 	double dGetDouble();
-	void vRandomizeSeed();
 private:
 	int i_seed;
 	std::uniform_int_distribution<int> u_int_generator;

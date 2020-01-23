@@ -6,14 +6,16 @@
 int main()
 {
 	CMscnProblem t;
-	t.iSetSuppliersCount(2);
-	t.iSetFactoriesCount(4);
-	t.iSetWarehousesCount(3);
-	t.iSetShopsCount(5);
+	t.iSetSuppliersCount(4);
+	t.iSetFactoriesCount(3);
+	t.iSetWarehousesCount(5);
+	t.iSetShopsCount(2);
 	int result = t.iGenerateInstance(123456789);
 	std::cout << "generate: " << result << "\n";
 	result = t.iSaveProblemToFile("C:\\Users\\Sebastian\\Desktop\\TEST.txt");
 	std::cout << "save: " << result << "\n";
-	CRandomSearch c_solver(1000000);
-	c_solver.pdSolve(&t);
+	CRandomSearch c_solver(100000);
+	c_solver.vSetSeed(123456789);
+	double* pd_solution = c_solver.pdSolve(&t);
+	std::cout<<"NAJLEPSZA: "<<t.dGetQuality(pd_solution, NULL);
 }

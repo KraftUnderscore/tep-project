@@ -42,15 +42,3 @@ double CRandom::dGetDouble()
 {
 	return u_double_generator(m_engine);
 }
-
-void CRandom::vRandomizeSeed()
-{
-	int i_prev_min = u_int_generator.min();
-	int i_prev_max = u_int_generator.max();
-
-	iSetIntRange(0, INT_MAX);
-	i_seed = iGetInt();
-	iSetIntRange(i_prev_min, i_prev_max);
-
-	vSetSeed(i_seed);
-}

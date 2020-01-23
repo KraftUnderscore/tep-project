@@ -9,6 +9,8 @@ public:
 	~CRandomSearch();
 	int iSetMaxCount(int iMaxCount);
 	double* pdSolve(CMscnProblem* c_problem);
+	void vSetSeed(int iSeed) { c_rand.vSetSeed(iSeed); }
+	int iGetSeed() { return c_rand.iGetSeed(); }
 private:
 	CRandom c_rand;
 	int i_max_count;

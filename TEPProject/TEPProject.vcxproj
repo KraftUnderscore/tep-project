@@ -23,7 +23,7 @@
     <ProjectGuid>{845C2F04-F3B4-457D-B8E1-3135F7C46DF5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TEPProject</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -155,6 +155,7 @@
     <ClInclude Include="CMscnProblem.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CRandom.h" />
+    <ClInclude Include="CRandomMod.h" />
     <ClInclude Include="CRandomSearch.h" />
     <ClInclude Include="CTable.h" />
     <ClInclude Include="pch.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="CMatrix.cpp" />
     <ClCompile Include="CMscnProblem.cpp" />
     <ClCompile Include="CRandom.cpp" />
+    <ClCompile Include="CRandomMod.cpp" />
     <ClCompile Include="CRandomSearch.cpp" />
     <ClCompile Include="CTable.cpp" />
     <ClCompile Include="pch.cpp">
